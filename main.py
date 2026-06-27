@@ -27,10 +27,10 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-logger.info(f"ResearchTrack Application starting up. Log level: {LOG_LEVEL_STR}")
+logger.info(f"AskiResearchLabs Application starting up. Log level: {LOG_LEVEL_STR}")
 # ---------------------
 
-app = FastAPI(title="ResearchTrack API")
+app = FastAPI(title="AskiResearchLabs API")
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="app/static"), name="static")

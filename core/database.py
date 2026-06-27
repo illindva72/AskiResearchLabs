@@ -1,5 +1,5 @@
 """
-database.py — SQLite storage layer for ResearchTrack (Python/Streamlit port)
+database.py — SQLite storage layer for AskiResearchLabs (Python/Streamlit port)
 
 Tables:
   searches    — one row per user research query
@@ -13,7 +13,7 @@ import time
 import os
 from typing import Optional
 
-db_name = os.getenv("DB_NAME", "researchtrack.db")
+db_name = os.getenv("DB_NAME", "askiresearchlabs.db")
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), db_name)
 
 

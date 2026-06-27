@@ -1,6 +1,6 @@
-# ResearchTrack — FastAPI Academic Paper Explorer & Model Evaluator
+# AskiResearchLabs — FastAPI Academic Paper Explorer & Model Evaluator
 
-**ResearchTrack** is a FastAPI-backed academic research tracking platform designed for data scientists and researchers.
+**AskiResearchLabs** is a FastAPI-backed academic research tracking platform designed for data scientists and researchers.
 
 This repository provides a web service for searching academic papers across **IEEE, ACM, arXiv, and Semantic Scholar**, storing results in a local SQLite database, and utilizing **Claude 3.5 Sonnet** to generate comprehensive AI evaluations, execution plans, and opportunity scores for your research topics.
 
@@ -58,7 +58,7 @@ AskiResearchLab/
 │   ├── database.py           SQLite storage layer (Users, Searches, Opportunity Scores, etc.)
 │   ├── fetchers.py           Academic paper fetchers (OpenAlex, CrossRef, arXiv)
 │   └── evaluate.py           Claude API integration, prompts, and mathematical weighting
-├── researchtrack.db          Auto-created SQLite datastore
+├── askiresearchlabs.db          Auto-created SQLite datastore
 ├── .env                      Local environment variables (gitignored)
 ├── .env.example              Template for needed env vars
 ├── requirements.txt         Python dependencies

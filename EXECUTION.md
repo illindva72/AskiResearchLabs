@@ -1,6 +1,6 @@
-# EXECUTION GUIDE — ResearchTrack (FastAPI)
+# EXECUTION GUIDE — AskiResearchLabs (FastAPI)
 
-Step-by-step instructions for running ResearchTrack locally and deploying it to Zoho Catalyst AppSail.
+Step-by-step instructions for running AskiResearchLabs locally and deploying it to Zoho Catalyst AppSail.
 
 ---
 
@@ -63,7 +63,7 @@ ANTHROPIC_API_KEY=sk-ant-your-key-here
 
 ```env
 ANTHROPIC_BASE_URL=https://agent-proxy.perplexity.ai/anthropic
-DB_NAME=researchtrack.db
+DB_NAME=askiresearchlabs.db
 ADMIN_EMAIL=admin@yourdomain.com
 ADMIN_EMAIL_PASSWORD=your-smtp-password
 SMTP_HOST=smtp.zoho.com
@@ -178,7 +178,7 @@ This verifies that the service behaves correctly before pushing it to Catalyst.
 |---|---|---|
 | `ANTHROPIC_API_KEY` | Yes | Claude AI evaluation key |
 | `ANTHROPIC_BASE_URL` | No | Alternate Anthropic endpoint (Perplexity proxy) |
-| `DB_NAME` | No | SQLite filename, defaults to `researchtrack.db` |
+| `DB_NAME` | No | SQLite filename, defaults to `askiresearchlabs.db` |
 | `ADMIN_EMAIL` | No | SMTP sender address for OTP emails |
 | `ADMIN_EMAIL_PASSWORD` | No | SMTP password for OTP email delivery |
 | `SMTP_HOST` | No | SMTP host, default is `smtp.zoho.com` |
@@ -253,7 +253,7 @@ streamlit run app.py
 ## 9. Project Structure
 
 ```
-researchtrack-streamlit/
+askiresearchlabs-streamlit/
 ├── app.py                      Entry point — run this with streamlit
 ├── pages/
 │   ├── 1_Research_Search.py    Search form + paper results

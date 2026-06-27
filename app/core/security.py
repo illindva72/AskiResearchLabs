@@ -6,7 +6,7 @@ from typing import Optional
 from fastapi import HTTPException, status, Request
 
 # Security configurations
-SECRET_KEY = os.getenv("SECRET_KEY", "super-secret-key-for-researchtrack-1l-scale")
+SECRET_KEY = os.getenv("SECRET_KEY", "super-secret-key-for-askiresearchlabs-1l-scale")
 ALGORITHM = "HS256"
 # Allow configuring session expiration from .env, defaulting to 7 days (10080 minutes)
 SESSION_EXPIRY_MINUTES = int(os.getenv("SESSION_EXPIRY_MINUTES", 60 * 24 * 7))

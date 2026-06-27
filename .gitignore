@@ -1,6 +1,6 @@
 .env
 data.db
-researchtrack.db
+askiresearchlabs.db
 __pycache__/
 *.pyc
 *.pyo

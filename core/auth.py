@@ -25,9 +25,9 @@ def send_otp_email(to_email: str, otp: str):
         msg = MIMEMultipart()
         msg['From'] = admin_email
         msg['To'] = to_email
-        msg['Subject'] = "ResearchTrack - Your Login OTP"
+        msg['Subject'] = "AskiResearchLabs - Your Login OTP"
         
-        body = f"Your OTP for ResearchTrack login is: {otp}\nIt is valid for 10 minutes."
+        body = f"Your OTP for AskiResearchLabs login is: {otp}\nIt is valid for 10 minutes."
         msg.attach(MIMEText(body, 'plain'))
         
         # Adjust SMTP settings for your provider (e.g., smtp.zoho.com)
@@ -66,7 +66,7 @@ def send_upgrade_email(user_email: str, user_name: str, db_size_mb: float):
         msg = MIMEMultipart()
         msg['From'] = admin_email
         msg['To'] = admin_email # Send to admin
-        msg['Subject'] = f"ResearchTrack - Upgrade Request from {user_name}"
+        msg['Subject'] = f"AskiResearchLabs - Upgrade Request from {user_name}"
         
         body = f"User {user_name} ({user_email}) has exceeded the 150MB storage limit (Current usage: {db_size_mb:.2f} MB) and is requesting a plan upgrade to discuss pricing."
         msg.attach(MIMEText(body, 'plain'))

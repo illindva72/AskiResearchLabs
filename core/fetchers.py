@@ -1,5 +1,5 @@
 """
-fetchers.py — Academic paper fetchers for ResearchTrack (Python/Streamlit port)
+fetchers.py — Academic paper fetchers for AskiResearchLabs (Python/Streamlit port)
 
 Sources supported:
   - IEEE     → OpenAlex (publisher filter P4310319808) + CrossRef (member:263)
@@ -16,7 +16,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Optional
 import requests
 
-HEADERS = {"User-Agent": "ResearchTrack/1.0 (mailto:research@tracker.app)"}
+HEADERS = {"User-Agent": "AskiResearchLabs/1.0 (mailto:research@tracker.app)"}
 TIMEOUT = 12
 
 OPENALEX_IEEE_ID = "P4310319808"
@@ -96,7 +96,7 @@ def _fetch_arxiv(query: str, limit: int) -> list:
             f"&start=0&max_results={limit}"
             f"&sortBy=relevance&sortOrder=descending"
         )
-        r = requests.get(url, headers={"User-Agent": "ResearchTrack/1.0"}, timeout=TIMEOUT)
+        r = requests.get(url, headers={"User-Agent": "AskiResearchLabs/1.0"}, timeout=TIMEOUT)
         if not r.ok:
             return []
 
