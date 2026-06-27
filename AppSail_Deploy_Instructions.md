@@ -54,7 +54,7 @@ Whether you chose GitHub or ZIP Upload, configure the remaining fields as follow
 | **Build Source** | Select **ZIP / WAR** |
 | **Upload File** | Click and browse to upload your `AskiResearchLabs_Source.zip` file |
 | **Stack** | Select **Python 3.10** (or highest Python 3.x available) |
-| **Start Command** | `uvicorn main:app --host 0.0.0.0 --port $X_ZOHO_CATALYST_LISTEN_PORT` |
+| **Startup Command** | `python -m uvicorn main:app --host 0.0.0.0 --port $X_ZOHO_CATALYST_LISTEN_PORT` |
 | **Memory** | `256 MB` or `512 MB` is sufficient for this application |
 
 > [!IMPORTANT]
