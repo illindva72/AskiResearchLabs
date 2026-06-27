@@ -128,15 +128,18 @@ npm install -g zcatalyst-cli
 catalyst login
 ```
 
-### Initialize or add AppSail
+### Initialize Catalyst Project
 
-If the project is not yet configured for Catalyst AppSail, use the CLI to add an AppSail service in the project directory:
+If the project is not yet configured for Catalyst, initialize it using the CLI in the project directory:
 
 ```powershell
-catalyst appsail:add
+catalyst init
 ```
 
-This associates your local code with a Catalyst AppSail service.
+During initialization:
+1. Choose **New-Project** and follow the browser prompt.
+2. When asked *"Which are the features you want to setup for this folder?"*, use your **spacebar** to select **AppSail: Configure and deploy AppSails**, then press **Enter**.
+3. Follow any subsequent prompts to name your AppSail service (you can point it to the current directory `.` or let it create a new folder and move your files into it).
 
 ### Deploy the app
 
