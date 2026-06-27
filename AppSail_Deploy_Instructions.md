@@ -6,9 +6,24 @@ Here is the step-by-step guide to deploying AskiResearchLabs from scratch using 
 
 ---
 
-## Step 1: Prepare Your Code (Create a ZIP)
+## Method 1: Deploy Directly from GitHub (Recommended & Automated)
 
-To upload via the web console, you must package your source code into a `.zip` file. **The structure inside the zip must be flat** (i.e., `main.py` and `requirements.txt` must be at the very top level of the zip, not inside a subfolder).
+Since you have already published your code to GitHub, this is the easiest and most powerful method. It allows Catalyst to automatically pull your code, and you can even enable automatic deployments whenever you push new changes to GitHub!
+
+1. Go to the [Zoho Catalyst Console](https://console.catalyst.zoho.in) and create your project (e.g., **AskiResearchLabs**).
+2. Navigate to **Compute** -> **AppSail** and click **Create Service**.
+3. Under the **Build Source** section, select **GitHub** instead of ZIP.
+4. Click **Connect to GitHub** and authorize Zoho Catalyst to access your GitHub account.
+5. Once authorized, select your repository: `illindva72/AskiResearchLabs`.
+6. Select the branch to deploy: `main`.
+7. Fill in the remaining configuration settings (Stack, Command, Memory, etc.) exactly as described in the Configuration Settings table below.
+8. (Optional) Toggle on **Enable Automatic Deployment** so any future `git push` updates your live site automatically!
+
+---
+
+## Method 2: Manual ZIP File Upload
+
+If you ever need to manually deploy without GitHub, you must package your source code into a `.zip` file. **The structure inside the zip must be flat** (i.e., `main.py` and `requirements.txt` must be at the very top level of the zip).
 
 1. Open your `AskiResearchLab` folder in File Explorer.
 2. **Select all the required files and folders**:
@@ -27,20 +42,9 @@ To upload via the web console, you must package your source code into a `.zip` f
 
 ---
 
-## Step 2: Create a Fresh Catalyst Project
+## Step 3: Configure the AppSail Service
 
-1. Go to the [Zoho Catalyst Console](https://console.catalyst.zoho.in) (or `.com` based on your region) and log in.
-2. Click the **Create Project** button on the top right.
-3. Name your project **AskiResearchLabs** and accept the terms to create it.
-4. Once the project dashboard loads, you are ready to set up AppSail.
-
----
-
-## Step 3: Create the AppSail Service
-
-1. In the left-hand menu, click on **Compute** and then select **AppSail**.
-2. Click the **Create Service** (or "Get Started") button in the center of the screen.
-3. You will be presented with a configuration screen for your new service:
+Whether you chose GitHub or ZIP Upload, configure the remaining fields as follows:
 
 ### AppSail Configuration Settings:
 
