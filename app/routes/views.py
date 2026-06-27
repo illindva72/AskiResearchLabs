@@ -476,6 +476,6 @@ async def contact_admin(request: Request):
     query_details = form.get("query_details", "")
     
     from core.auth import send_contact_email
-    send_contact_email(user["email"], user["name"], title, subject, query_details)
+    send_contact_email(user["sub"], user["name"], title, subject, query_details)
     
     return RedirectResponse(url="/subscription?success=1", status_code=302)
