@@ -1,57 +1,63 @@
-# ResearchTrack — FastAPI Academic Paper Explorer
+# ResearchTrack — FastAPI Academic Paper Explorer & Model Evaluator
 
-**ResearchTrack** is a FastAPI-backed academic paper search and thesis proposal evaluator.
+**ResearchTrack** is a FastAPI-backed academic research tracking platform designed for data scientists and researchers.
 
-This repository provides a web service for searching academic papers across **IEEE, ACM, arXiv, and Semantic Scholar**, storing results in SQLite, and generating a Claude-powered evaluation of research ideas across seven expert dimensions.
+This repository provides a web service for searching academic papers across **IEEE, ACM, arXiv, and Semantic Scholar**, storing results in a local SQLite database, and utilizing **Claude 3.5 Sonnet** to generate comprehensive AI evaluations, execution plans, and opportunity scores for your research topics.
 
 ---
 
 ## What it does
 
-### Research Search
-- Search by Research Area, Research Domain, Research Topic Name, Research Topic Details
-- Parallel paper discovery from IEEE, ACM, arXiv, and Semantic Scholar
-- Deduplicates results by DOI and ranks them by relevance
-- Stores search history and fetched papers in a local SQLite database
+### 🔍 Research Search
+- Search by Research Area, Research Domain, Research Topic Name, and Topic Details.
+- Parallel paper discovery from IEEE, ACM, arXiv, and Semantic Scholar.
+- Deduplicates results by DOI and ranks them by relevance.
+- Stores search history and fetched papers in a local SQLite database.
 
-### AI Evaluation
-- Claude AI evaluation of research topics across seven dimensions:
-  - **Feasible**
-  - **Novel**
-  - **Relevant**
-  - **Ethical**
-  - **Scope**
-  - **Professor View**
-  - **Career Alignment**
-- Evaluation results are cached in SQLite to avoid repeated AI calls
+### 📊 Model Opportunity Score
+- Interactive Plotly-based dashboard evaluating whether an AI/ML topic is worth pursuing.
+- Evaluates 10 critical dimensions (Problem Value, Data Availability, Technical Feasibility, ROI Potential, etc.) on a 1-10 scale using Claude.
+- **Scoring Profiles:** Instantly toggle between Default, Startup, Research, and Enterprise profiles to dynamically adjust the dimension weights and recalculate the final score out of 100 without hitting the API again.
+- Radar charts for raw dimension comparisons and Bar charts for weighted contributions.
 
-### Search History and User Flow
-- User registration and login via email/password
-- Browse past searches and evaluation status
-- Delete outdated searches
-- View per-search paper lists and paper metadata
+### 🛠️ Model Execution Factors
+- Generates realistic execution plans for research topics.
+- **Architecture Flowcharts:** ASCII-based structural workflow diagrams.
+- **Dataset Needs:** Recommended datasets, sources, sizes, and formats.
+- **Model Variables:** Clear input and output variables for the ML model.
+- **Literature Match:** Cross-references with existing academic papers.
+
+### 🧠 AI Evaluation (Summary of Dimensions)
+- Claude AI evaluation of research topics across seven foundational dimensions:
+  - **Feasible, Novel, Relevant, Ethical, Scope, Professor View, Career Alignment**
+- Evaluation results are cached in SQLite to prevent redundant AI API calls.
+
+### 👤 User Flow
+- User registration and login via email/password.
+- Browse past searches, execution factors, and opportunity scores.
+- Clean up and delete outdated searches.
 
 ---
 
 ## Current Architecture
 
 ```
-researchtrack-streamlit/
+AskiResearchLab/
 ├── main.py                   FastAPI app entrypoint
 ├── app/
 │   ├── __init__.py
 │   ├── core/
 │   │   └── security.py       Authentication and JWT helpers
 │   ├── routes/
-│   │   ├── views.py          Search, dimensions, bot, and page rendering
+│   │   ├── views.py          Search, dimensions, execution, opportunity, and page rendering
 │   │   ├── api.py            Health check and API route stubs
 │   │   └── auth_views.py     Login/signup/logout routes
 │   ├── static/               CSS and web assets
-│   └── templates/            Jinja2 templates for HTML pages
+│   └── templates/            Jinja2 templates for HTML pages (Plotly integrated)
 ├── core/
-│   ├── database.py           SQLite storage layer and persistence helpers
+│   ├── database.py           SQLite storage layer (Users, Searches, Opportunity Scores, etc.)
 │   ├── fetchers.py           Academic paper fetchers (OpenAlex, CrossRef, arXiv)
-│   └── evaluate.py           Claude AI evaluation prompt and API integration
+│   └── evaluate.py           Claude API integration, prompts, and mathematical weighting
 ├── researchtrack.db          Auto-created SQLite datastore
 ├── .env                      Local environment variables (gitignored)
 ├── .env.example              Template for needed env vars
@@ -59,8 +65,6 @@ researchtrack-streamlit/
 ├── README.md                Project overview and architecture
 └── EXECUTION.md             Local run and deployment instructions
 ```
-
-> Note: The active app in this repository is a FastAPI web service. A `backup/` folder contains an older Streamlit port and is not the current runtime.
 
 ---
 
@@ -71,9 +75,10 @@ researchtrack-streamlit/
 | Web framework | FastAPI |
 | Runtime server | Uvicorn |
 | Templates | Jinja2 |
+| Frontend Charts | Plotly.js |
 | Database | SQLite (`sqlite3`) |
 | Email / OTP | SMTP via Python `smtplib` |
-| AI evaluation | Anthropic Claude |
+| AI evaluation | Anthropic Claude 3.5 Sonnet (using `anthropic-beta` headers) |
 | HTTP / APIs | `requests` |
 | Auth | `passlib`, `PyJWT` |
 
@@ -86,7 +91,7 @@ researchtrack-streamlit/
 | OpenAlex | Academic paper discovery | No |
 | CrossRef | Paper metadata / DOI lookup | No |
 | arXiv | Preprint search | No |
-| Anthropic | AI evaluation service | Yes |
+| Anthropic | AI evaluation & scoring | Yes |
 
 ---
 
@@ -96,17 +101,4 @@ researchtrack-streamlit/
 - Production-ready deployment can target **Zoho Catalyst AppSail**
 - `main.py` is the correct service entrypoint for both local and cloud deployment
 
----
-
-## Useful Files
-
-- `main.py` — FastAPI application runner
-- `core/database.py` — SQLite DB schema and persistence
-- `core/fetchers.py` — paper fetchers for OpenAlex, CrossRef, arXiv
-- `core/evaluate.py` — Anthropic Claude evaluation logic
-- `app/routes/views.py` — search and page rendering routes
-- `app/routes/auth_views.py` — authentication routes
-- `app/routes/api.py` — API and health endpoints
-- `.env.example` — template for environment variables
-- `requirements.txt` — Python dependency list
-- `EXECUTION.md` — full local and Zoho Catalyst deployment guide
+See [EXECUTION.md](EXECUTION.md) for step-by-step local setup and deployment instructions.

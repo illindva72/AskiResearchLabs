@@ -102,7 +102,7 @@ http://127.0.0.1:8000
 2. Sign up or log in using the authentication pages.
 3. Use the search page to enter your research topic and select sources.
 4. Browse the saved search history and paper details.
-5. Run the AI evaluation feature once `ANTHROPIC_API_KEY` is configured.
+5. Generate an AI **Summary of Dimensions**, **Model Execution Factors**, or a **Model Opportunity Score** (requires `ANTHROPIC_API_KEY` to be configured).
 
 ---
 
