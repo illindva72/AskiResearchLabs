@@ -8,7 +8,6 @@ and returns structured JSON with 7 dimension keys + a references section.
 import os
 import json
 import re
-from typing import Optional
 import anthropic
 from dotenv import load_dotenv
 

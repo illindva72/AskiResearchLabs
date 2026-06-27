@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
 import jwt
 from typing import Optional
-from fastapi import HTTPException, status, Request
+from fastapi import Request
 
 # Security configurations
 SECRET_KEY = os.getenv("SECRET_KEY", "super-secret-key-for-askiresearchlabs-1l-scale")

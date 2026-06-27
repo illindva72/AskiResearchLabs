@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Form, UploadFile, File, Depends
+from fastapi import APIRouter, Request, Form, UploadFile, File
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from typing import List, Optional
