@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 4rem auto; background: #1e293b; padding: 2.5rem; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+    <h2 style="margin-top: 0; text-align: center; color: #f8fafc;">Welcome Back</h2>
+    <p style="text-align: center; color: #94a3b8; font-size: 0.9rem; margin-bottom: 2rem;">Log in to access your research history.</p>
+
+    {% if error %}
+    <div style="background-color: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 0.75rem; border-radius: 6px; margin-bottom: 1.5rem; font-size: 0.85rem; text-align: center;">
+        {{ error }}
+    </div>
+    {% endif %}
+    {% if request.query_params.get("msg") == "success" %}
+    <div style="background-color: rgba(34, 197, 94, 0.2); border: 1px solid #22c55e; color: #86efac; padding: 0.75rem; border-radius: 6px; margin-bottom: 1.5rem; font-size: 0.85rem; text-align: center;">
+        Account created successfully! Please log in.
+    </div>
+    {% endif %}
+
+    <form method="POST" action="/auth/login">
+        <div style="margin-bottom: 1.25rem;">
+            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.9rem;">Email Address</label>
+            <input type="email" name="email" value="{{ email or '' }}" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; outline: none;">
+        </div>
+        {% if otp_sent %}
+        <div style="margin-bottom: 2rem;">
+            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.9rem;">OTP Code</label>
+            <input type="text" name="otp" autocomplete="one-time-code" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; outline: none;">
+        </div>
+        <div style="margin-bottom: 1rem; color: #94a3b8; font-size: 0.9rem;">A one-time code has been sent from <strong>admin@askitech.org</strong>.</div>
+        <button type="submit" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: none; background: #3b82f6; color: white; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+            Verify OTP
+        </button>
+        {% else %}
+        <button type="submit" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: none; background: #3b82f6; color: white; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+            Send OTP
+        </button>
+        {% endif %}
+    </form>
+    
+    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: #64748b;">
+        Don't have an account? <a href="/auth/signup" style="color: #60a5fa; text-decoration: none;">Sign Up</a>
+    </div>
+</div>
+{% endblock %}

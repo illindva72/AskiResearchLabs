@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 1000px; margin: auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2 style="margin: 0;">🛠️ Model Execution Factors</h2>
+        <a href="/execution" style="color: #94a3b8; text-decoration: none;">&larr; Back to List</a>
+    </div>
+
+    <!-- Error Messaging -->
+    {% if error %}
+    <div style="background-color: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+        ⚠️ {{ error }}
+    </div>
+    {% endif %}
+
+    <div style="background: #1e293b; padding: 1.5rem; border-radius: 12px; border: 1px solid #334155; margin-bottom: 2rem;">
+        <h3 style="margin-top: 0; color: #f8fafc;">{{ search.topic_name or search.topic }}</h3>
+        <p style="color: #cbd5e1; margin-bottom: 0.5rem;"><strong>Area:</strong> {{ search.area }} | <strong>Domain:</strong> {{ search.domain }}</p>
+        <p style="color: #94a3b8; font-size: 0.9rem; line-height: 1.5;">{{ search.topic_details }}</p>
+    </div>
+
+    <!-- Generate Form -->
+    <div style="background-color: #1e2130; border: 1px solid #2d3250; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h3 style="margin: 0 0 0.5rem 0; color: #f8fafc;">AI Execution Factors</h3>
+            <p style="margin: 0; color: #94a3b8; font-size: 0.9rem;">
+                Generate flowchart, datasets, variables, and matching papers for this topic.
+            </p>
+        </div>
+        <form method="POST" action="/execution/{{ search.id }}/generate" style="margin: 0;">
+            <button type="submit" style="background-color: #10b981; color: white; padding: 0.75rem 1.5rem; border-radius: 6px; border: none; font-weight: 500; cursor: pointer;">
+                {% if factors %}🔄 Regenerate Factors{% else %}🚀 Generate Factors{% endif %}
+            </button>
+        </form>
+    </div>
+
+    {% if factors %}
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <!-- Flowchart -->
+        <div style="background: #1e293b; padding: 1.5rem; border-radius: 12px; border: 1px solid #334155;">
+            <h4 style="margin: 0 0 1rem 0; color: #60a5fa; display: flex; align-items: center; gap: 0.5rem;">
+                <span>📊</span> Model Generation Flowchart
+            </h4>
+            <div style="color: #cbd5e1; line-height: 1.6; font-size: 0.95rem; white-space: pre-wrap;">{{ factors.flowchart | safe }}</div>
+        </div>
+
+        <!-- Dataset -->
+        <div style="background: #1e293b; padding: 1.5rem; border-radius: 12px; border: 1px solid #334155;">
+            <h4 style="margin: 0 0 1rem 0; color: #f472b6; display: flex; align-items: center; gap: 0.5rem;">
+                <span>📂</span> Sample Dataset & Synthetic Augmentation
+            </h4>
+            <div style="color: #cbd5e1; line-height: 1.6; font-size: 0.95rem; white-space: pre-wrap;">{{ factors.dataset | safe }}</div>
+        </div>
+
+        <!-- Input Variables -->
+        <div style="background: #1e293b; padding: 1.5rem; border-radius: 12px; border: 1px solid #334155;">
+            <h4 style="margin: 0 0 1rem 0; color: #34d399; display: flex; align-items: center; gap: 0.5rem;">
+                <span>📥</span> Input Variables
+            </h4>
+            <div style="color: #cbd5e1; line-height: 1.6; font-size: 0.95rem; white-space: pre-wrap;">{{ factors.input_vars | safe }}</div>
+        </div>
+
+        <!-- Output Variables -->
+        <div style="background: #1e293b; padding: 1.5rem; border-radius: 12px; border: 1px solid #334155;">
+            <h4 style="margin: 0 0 1rem 0; color: #fbbf24; display: flex; align-items: center; gap: 0.5rem;">
+                <span>📤</span> Output Variable(s)
+            </h4>
+            <div style="color: #cbd5e1; line-height: 1.6; font-size: 0.95rem; white-space: pre-wrap;">{{ factors.output_vars | safe }}</div>
+        </div>
+
+        <!-- Matching Papers -->
+        <div style="background: #1e293b; padding: 1.5rem; border-radius: 12px; border: 1px solid #334155;">
+            <h4 style="margin: 0 0 1rem 0; color: #a78bfa; display: flex; align-items: center; gap: 0.5rem;">
+                <span>📄</span> 5 Matching Research Papers
+            </h4>
+            <ul style="color: #cbd5e1; line-height: 1.6; font-size: 0.95rem; padding-left: 1.2rem; margin: 0;">
+                {% for paper in factors.matching_papers %}
+                <li style="margin-bottom: 0.5rem;">{{ paper }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
