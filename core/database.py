@@ -99,6 +99,10 @@ def init_db() -> None:
             hashed_password TEXT,
             otp TEXT,
             otp_expiry INTEGER,
+            phone TEXT,
+            place TEXT,
+            city TEXT,
+            country TEXT,
             created_at INTEGER NOT NULL
         );
 
@@ -243,9 +247,22 @@ def get_user_by_email(email: str) -> Optional[dict]:
 
 def get_user_by_id(user_id: int) -> Optional[dict]:
     conn = get_conn()
-    row = conn.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
+    row = conn.execute(
+        "SELECT * FROM users WHERE id = ?", (user_id,)
+    ).fetchone()
     conn.close()
     return dict(row) if row else None
+
+def update_user_info(user_id: int, phone: str, place: str, city: str, country: str):
+    conn = get_conn()
+    conn.execute(
+        """UPDATE users 
+           SET phone = ?, place = ?, city = ?, country = ?
+           WHERE id = ?""",
+        (phone, place, city, country, user_id)
+    )
+    conn.commit()
+    conn.close()
 
 def get_all_users() -> list[dict]:
     conn = get_conn()

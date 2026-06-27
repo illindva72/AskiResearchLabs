@@ -17,8 +17,17 @@
         
         .nav-link { display: block; padding: 0.75rem 1rem; color: #cbd5e1; text-decoration: none; border-radius: 6px; margin-bottom: 0.5rem; transition: background 0.2s; }
         .nav-link:hover { background-color: #334155; color: #fff; }
-        .auth-btn { background-color: #3b82f6; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-weight: 500; }
+        .auth-btn { background-color: #3b82f6; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-weight: 500; display: inline-block; }
         .auth-btn:hover { background-color: #2563eb; }
+        
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content { display: none; position: absolute; right: 0; background-color: #1e293b; min-width: 160px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5); border: 1px solid #334155; border-radius: 8px; z-index: 1; overflow: hidden; margin-top: 5px; }
+        .dropdown-content a { color: #cbd5e1; padding: 12px 16px; text-decoration: none; display: block; border-bottom: 1px solid #334155; }
+        .dropdown-content a:last-child { border-bottom: none; }
+        .dropdown-content a:hover { background-color: #334155; color: white; }
+        .dropdown:hover .dropdown-content { display: block; }
+        
+        .footer { padding: 1.5rem; text-align: center; color: #64748b; font-size: 0.85rem; border-top: 1px solid #334155; margin-top: auto; }
     </style>
 </head>
 <body>
@@ -47,10 +56,19 @@
 <div class="main-content">
     <header class="header">
         <div style="font-weight: 500;">Beta Version</div>
-        <div>
+        <div style="display: flex; align-items: center; gap: 15px;">
             {% if user %}
-                <span style="color: #94a3b8; font-size: 0.9rem; margin-right: 15px;">👤 {{ user.name }} ({{ user.role|capitalize }})</span>
-                <a href="/auth/logout" class="auth-btn" style="background-color: #475569;">Logout</a>
+                <a href="/subscription" class="auth-btn" style="background-color: #10b981;">Contact Us</a>
+                <div class="dropdown">
+                    <span style="color: #94a3b8; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                        👤 {{ user.name }} ({{ user.role|capitalize }}) <span style="font-size: 0.7rem;">▼</span>
+                    </span>
+                    <div class="dropdown-content">
+                        <a href="/account">Account Info</a>
+                        <a href="/subscription">Subscription</a>
+                    </div>
+                </div>
+                <a href="/auth/logout" class="auth-btn" style="background-color: #475569; margin-left: 10px;">Logout</a>
             {% else %}
                 <a href="/auth/login" class="auth-btn">Login / Sign Up</a>
             {% endif %}
@@ -61,6 +79,10 @@
         {% block content %}
         {% endblock %}
     </main>
+    
+    <footer class="footer">
+        &copy; 2026 AskiResearchLabs. All rights reserved.
+    </footer>
 </div>
 
 <!-- Session Expiry Modal -->

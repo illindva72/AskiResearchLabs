@@ -90,6 +90,45 @@ def send_upgrade_email(user_email: str, user_name: str, db_size_mb: float):
         print(f"Failed to send upgrade email: {e}")
         return False
 
+def send_contact_email(user_email: str, user_name: str, title: str, subject: str, query_details: str):
+    admin_email = os.getenv("ADMIN_EMAIL", "admin@askitech.org")
+    admin_pass = os.getenv("ADMIN_EMAIL_PASSWORD")
+    
+    if not admin_pass:
+        print(f"\n========== MOCK EMAIL ==========\nFrom: {user_email} ({user_name})\nTo: {admin_email}\nSubject: {title} - {subject}\nQuery: {query_details}\n================================\n")
+        return True
+
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = admin_email
+        msg['To'] = admin_email
+        msg['Reply-To'] = user_email
+        msg['Subject'] = f"Contact/Upgrade Request: {title} - {subject} (from {user_name})"
+        
+        body = f"User Name: {user_name}\nUser Email: {user_email}\n\nTitle: {title}\nSubject: {subject}\n\nQuery Details:\n{query_details}"
+        msg.attach(MIMEText(body, 'plain'))
+        
+        smtp_host = os.getenv("SMTP_HOST", "smtp.zoho.com")
+        smtp_port = int(os.getenv("SMTP_PORT", 587))
+        
+        if smtp_port == 465:
+            server = smtplib.SMTP_SSL(smtp_host, smtp_port)
+            server.set_debuglevel(1)
+        else:
+            server = smtplib.SMTP(smtp_host, smtp_port)
+            server.set_debuglevel(1)
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+            
+        server.login(admin_email, admin_pass)
+        server.send_message(msg)
+        server.quit()
+        return True
+    except Exception as e:
+        print(f"Failed to send contact email: {e}")
+        print(f"\n========== MOCK EMAIL ==========\nTo: {admin_email}\nSubject: {title} - {subject}\n================================\n")
+        return True
 
 def require_auth():
     if "user" not in st.session_state:

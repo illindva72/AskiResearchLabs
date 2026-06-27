@@ -428,3 +428,54 @@ async def generate_opportunity_score(request: Request, search_id: int):
         })
         
     return RedirectResponse(url=f"/opportunity/{search_id}", status_code=302)
+
+# ─── Account & Subscription ──────────────────────────────────────────────────
+
+@router.get("/account")
+async def account_info_page(request: Request):
+    user = get_current_user_from_cookie(request)
+    if not user:
+        return RedirectResponse(url="/auth/login", status_code=302)
+    
+    # Re-fetch user to get the latest optional fields
+    full_user = db.get_user_by_id(user["id"])
+    return templates.TemplateResponse(request, "pages/account.html", {"request": request, "user": full_user})
+
+@router.post("/account")
+async def update_account_info(request: Request):
+    user = get_current_user_from_cookie(request)
+    if not user:
+        return RedirectResponse(url="/auth/login", status_code=302)
+    
+    form = await request.form()
+    phone = form.get("phone", "")
+    place = form.get("place", "")
+    city = form.get("city", "")
+    country = form.get("country", "")
+    
+    db.update_user_info(user["id"], phone, place, city, country)
+    return RedirectResponse(url="/account?success=1", status_code=302)
+
+@router.get("/subscription")
+async def subscription_page(request: Request):
+    user = get_current_user_from_cookie(request)
+    if not user:
+        return RedirectResponse(url="/auth/login", status_code=302)
+        
+    return templates.TemplateResponse(request, "pages/subscription.html", {"request": request, "user": user})
+
+@router.post("/contact-admin")
+async def contact_admin(request: Request):
+    user = get_current_user_from_cookie(request)
+    if not user:
+        return RedirectResponse(url="/auth/login", status_code=302)
+    
+    form = await request.form()
+    title = form.get("title", "")
+    subject = form.get("subject", "")
+    query_details = form.get("query_details", "")
+    
+    from core.auth import send_contact_email
+    send_contact_email(user["email"], user["name"], title, subject, query_details)
+    
+    return RedirectResponse(url="/subscription?success=1", status_code=302)
