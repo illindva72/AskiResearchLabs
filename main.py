@@ -60,4 +60,8 @@ if __name__ == "__main__":
             LOGGING_CONFIG["loggers"][logger_name]["handlers"] = [fmt, "file"]
             
     # Make sure uvicorn also respects our log level
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, log_level=LOG_LEVEL_STR.lower(), log_config=LOGGING_CONFIG)
+    # Use the Catalyst port if available, otherwise default to 8000
+    port = int(os.getenv("X_ZOHO_CATALYST_LISTEN_PORT", 8000))
+    host = "0.0.0.0" if os.getenv("X_ZOHO_CATALYST_LISTEN_PORT") else "127.0.0.1"
+    
+    uvicorn.run("main:app", host=host, port=port, reload=True, log_level=LOG_LEVEL_STR.lower(), log_config=LOGGING_CONFIG)
