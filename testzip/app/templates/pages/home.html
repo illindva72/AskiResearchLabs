@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 style="margin-top: 0;">🔬 Welcome to AskiResearchLabs</h1>
+<p style="color: #94a3b8; font-size: 1.1rem; max-width: 800px; line-height: 1.6;">
+    Enter your research topic and instantly search IEEE, ACM, arXiv and Semantic Scholar. 
+    Get AI-powered thesis evaluation structured elegantly for high-tier academic research.
+</p>
+
+<div style="display: flex; gap: 1.5rem; margin-top: 2.5rem; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 250px; background: #1a1f35; padding: 1.5rem; border-radius: 12px; border: 1px solid #2d3250;">
+        <h3 style="margin-top:0;">🔍 Multi-Source Search</h3>
+        <p style="color: #64748b; font-size: 0.9rem; line-height: 1.5;">Parallel searches across IEEE, ACM, arXiv preprints, and Semantic Scholar mapped to a centralized database.</p>
+    </div>
+    <div style="flex: 1; min-width: 250px; background: #1a1f35; padding: 1.5rem; border-radius: 12px; border: 1px solid #2d3250;">
+        <h3 style="margin-top:0;">📊 AI Thesis Evaluation</h3>
+        <p style="color: #64748b; font-size: 0.9rem; line-height: 1.5;">Claude evaluates your proposal across 7 expert dimensions seamlessly integrated under the formal UX.</p>
+    </div>
+    <div style="flex: 1; min-width: 250px; background: rgba(30, 58, 138, 0.2); padding: 1.5rem; border-radius: 12px; border: 1px dashed #3b82f6;">
+        <h3 style="margin-top:0; color: #60a5fa;">🤖 Interactive Bot Agent</h3>
+        <p style="color: #94a3b8; font-size: 0.9rem; line-height: 1.5;">(Future Enhancement) Real-time coding assistance and context-aware Q&A tailored specifically to the models within your searched papers.</p>
+    </div>
+</div>
+{% endblock %}

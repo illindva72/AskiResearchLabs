@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 2rem auto; background: #1e293b; padding: 2.5rem; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+    <h2 style="margin-top: 0; text-align: center; color: #f8fafc;">Create an Account</h2>
+    <p style="text-align: center; color: #94a3b8; font-size: 0.9rem; margin-bottom: 2rem;">Join AskiResearchLabs for academic excellence.</p>
+
+    {% if error %}
+    <div style="background-color: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 0.75rem; border-radius: 6px; margin-bottom: 1.5rem; font-size: 0.85rem; text-align: center;">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="POST" action="/auth/signup">
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.25rem;">
+            <div style="flex: 1;">
+                <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.9rem;">Full Name *</label>
+                <input type="text" name="name" value="{{ name or '' }}" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; outline: none;">
+            </div>
+            <div style="flex: 1;">
+                <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.9rem;">Email *</label>
+                <input type="email" name="email" value="{{ email or '' }}" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; outline: none;">
+            </div>
+        </div>
+
+        <div style="margin-bottom: 1.25rem;">
+            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.9rem;">University *</label>
+            <input type="text" name="university" value="{{ university or '' }}" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; outline: none;">
+        </div>
+
+        <div style="margin-bottom: 1.25rem;">
+            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.9rem;">Area of Interest *</label>
+            <select id="area-select" name="area_interest_select" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; outline: none;">
+                {% for option in ["Predictive Analytics", "Time Series Forecasting", "Recommendation Systems", "Deep Learning", "Computer Vision", "Natural Language Processing", "Generative AI", "Reinforcement Learning", "Explainable AI", "Other"] %}
+                <option value="{{ option }}" {% if area_interest_select == option %}selected{% endif %}>{{ option }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="margin-bottom: 1.25rem;" id="area-other-container" {% if area_interest_select != 'Other' %}style="display:none;"{% endif %}>
+            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.9rem;">Other Area of Interest</label>
+            <input type="text" name="area_interest_other" value="{{ area_interest_other or '' }}" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; outline: none;">
+        </div>
+
+        <div style="margin-bottom: 1.25rem;">
+            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.9rem;">Domain of Interest *</label>
+            <select id="domain-select" name="domain_interest_select" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; outline: none;">
+                {% for option in ["BFSI", "Retail", "Healthcare", "Ecommerce", "Telecom", "Not decided", "Other"] %}
+                <option value="{{ option }}" {% if domain_interest_select == option %}selected{% endif %}>{{ option }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="margin-bottom: 2rem;" id="domain-other-container" {% if domain_interest_select != 'Other' %}style="display:none;"{% endif %}>
+            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.9rem;">Other Domain of Interest</label>
+            <input type="text" name="domain_interest_other" value="{{ domain_interest_other or '' }}" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; outline: none;">
+        </div>
+
+        <button type="submit" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: none; background: #3b82f6; color: white; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+            Create Account
+        </button>
+    </form>
+    
+    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: #64748b;">
+        Already have an account? <a href="/auth/login" style="color: #60a5fa; text-decoration: none;">Log In</a>
+    </div>
+</div>
+
+<script>
+    const areaSelect = document.getElementById('area-select');
+    const areaOther = document.getElementById('area-other-container');
+    const domainSelect = document.getElementById('domain-select');
+    const domainOther = document.getElementById('domain-other-container');
+
+    function toggleOther(select, container) {
+        if (!select || !container) return;
+        container.style.display = select.value === 'Other' ? 'block' : 'none';
+    }
+
+    if (areaSelect) {
+        areaSelect.addEventListener('change', () => toggleOther(areaSelect, areaOther));
+        toggleOther(areaSelect, areaOther);
+    }
+    if (domainSelect) {
+        domainSelect.addEventListener('change', () => toggleOther(domainSelect, domainOther));
+        toggleOther(domainSelect, domainOther);
+    }
+</script>
+{% endblock %}

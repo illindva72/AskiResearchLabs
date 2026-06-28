@@ -215,24 +215,25 @@ DETAILS: {topic_details or 'Not provided'}
 SEARCH RESULTS CONTEXT (Matching Papers):
 {papers_context if papers_context else "None provided."}
 
-Return your response ONLY using the following XML tags. Do not include any other text outside these tags. Use HTML tags for formatting inside the tags instead of markdown (e.g., <ul>, <li>, <strong>, <p>). Do not use markdown syntax like **, *, or #.
+Return your response ONLY using the following XML tags. Do not include any other text outside these tags. Use markdown inside the tags.
 
 <flowchart>
-Provide an HTML unordered list (<ul>) showing the 4-5 high-level steps involved in generating the final model. 
-CRITICAL: Do NOT use ASCII art, boxes, or drawing characters. Just use a simple, extremely brief HTML list (max 100 words total).
+Provide a plain markdown bulleted list showing the 4-5 high-level steps involved in generating the final model. 
+CRITICAL: Do NOT use ASCII art, boxes, drawing characters (├──, └──, │), or code blocks. Just use a simple, extremely brief text list (max 100 words total).
 </flowchart>
 
 <dataset>
-Provide the best possible public sources to refer for the dataset to work with. Ideally the dataset should be a minimum of 50-75K records and look realistic for a real-time scenario. 
-Important: The data sources should ONLY be from public sources where there is no issue with consent for using it. Do NOT provide any code to generate synthetic data. Format your response beautifully using HTML (e.g. <p>, <strong>, <ul>).
+Provide the best possible sources to refer for the dataset to work with. Ideally the dataset should be a minimum of 50-75K records and look realistic for a real-time scenario. 
+Important: It is NOT mandatory to synthesize the data. However, in case of similarities of the dataset with the topics/papers in the search results, you MUST provide concise python code to add additional synthetic variables/columns to the source dataset to differentiate the research.
+CRITICAL: Do NOT attempt to generate or output the 50-75K raw data records yourself in text. Only output the sources, explanation, and a minimal python code snippet.
 </dataset>
 
 <input_vars>
-Provide the exact Input Variables from the provided Sample Dataset and explain in detail how they are considered as Input variables. Format your response beautifully using HTML.
+Provide the exact Input Variables from the provided Sample Dataset and explain in detail how they are considered as Input variables.
 </input_vars>
 
 <output_vars>
-Provide the Output variable(s) to evaluate the model and explain how/why they can be considered for model evaluation. Format your response beautifully using HTML.
+Provide the Output variable(s) to evaluate the model and explain how/why they can be considered for model evaluation.
 </output_vars>
 
 <matching_papers>

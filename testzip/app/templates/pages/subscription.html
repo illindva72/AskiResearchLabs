@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <h2 style="margin-top: 0; color: #f8fafc;">💎 Subscription & Upgrade</h2>
+
+    {% if request.query_params.get('success') %}
+        <div style="background-color: #064e3b; color: #34d399; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; border: 1px solid #047857;">
+            Your message has been sent successfully. Our team will contact you shortly!
+        </div>
+    {% endif %}
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+        <!-- Current Plan -->
+        <div style="background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 2rem; text-align: center;">
+            <div style="color: #64748b; font-size: 0.9rem; text-transform: uppercase; font-weight: bold; margin-bottom: 1rem;">Current Plan</div>
+            <div style="font-size: 2.5rem; color: #f8fafc; font-weight: bold; margin-bottom: 0.5rem;">Free Account</div>
+            <p style="color: #94a3b8; font-size: 0.9rem;">Basic search capabilities and limited Claude API tokens.</p>
+        </div>
+
+        <!-- Upgrade Option -->
+        <div style="background-color: #1e293b; border: 1px solid #3b82f6; border-radius: 8px; padding: 2rem; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: 0; right: 0; background-color: #3b82f6; color: white; padding: 0.25rem 1rem; font-size: 0.75rem; font-weight: bold; border-bottom-left-radius: 8px;">RECOMMENDED</div>
+            <div style="color: #3b82f6; font-size: 0.9rem; text-transform: uppercase; font-weight: bold; margin-bottom: 1rem;">Upgrade Option</div>
+            <ul style="color: #cbd5e1; font-size: 0.95rem; line-height: 1.6; padding-left: 1.2rem; margin-bottom: 1.5rem;">
+                <li><span style="color: #34d399;">✓</span> Unlimited Storage Capacity</li>
+                <li><span style="color: #34d399;">✓</span> Expanded Claude Anthropic Tokens</li>
+                <li><span style="color: #34d399;">✓</span> Priority API Processing</li>
+                <li><span style="color: #34d399;">✓</span> Dedicated Support</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Contact Admin Form -->
+    <div id="contact" style="background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 2rem;">
+        <h3 style="color: #cbd5e1; margin-top: 0; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; margin-bottom: 1.5rem;">Contact Admin</h3>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 1.5rem;">Need to upgrade your account or have a general query? Send a message to <strong>admin@askitech.org</strong> directly from here.</p>
+
+        <form method="POST" action="/contact-admin">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
+                <div>
+                    <label style="display: block; color: #cbd5e1; margin-bottom: 0.5rem;">Title / Organization</label>
+                    <input type="text" name="title" required placeholder="e.g. Acme Corp / Dr. Smith" style="width: 100%; padding: 0.75rem; background-color: #0f172a; border: 1px solid #334155; border-radius: 6px; color: white; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="display: block; color: #cbd5e1; margin-bottom: 0.5rem;">Subject</label>
+                    <input type="text" name="subject" required placeholder="e.g. Account Upgrade Request" style="width: 100%; padding: 0.75rem; background-color: #0f172a; border: 1px solid #334155; border-radius: 6px; color: white; box-sizing: border-box;">
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 2rem;">
+                <label style="display: block; color: #cbd5e1; margin-bottom: 0.5rem;">Query Details</label>
+                <textarea name="query_details" required rows="5" placeholder="Please describe your requirements, expected token usage, or questions..." style="width: 100%; padding: 0.75rem; background-color: #0f172a; border: 1px solid #334155; border-radius: 6px; color: white; box-sizing: border-box; resize: vertical;"></textarea>
+            </div>
+            
+            <button type="submit" style="background-color: #10b981; color: white; border: none; padding: 0.75rem 2rem; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 500;">Send Message to Admin</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

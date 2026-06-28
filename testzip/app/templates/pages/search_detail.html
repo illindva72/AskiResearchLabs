@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .topic-card {
+        background: #1a1f35;
+        border: 1px solid #2d3250;
+        border-radius: 10px;
+        padding: 1rem 1.4rem;
+        margin-bottom: 1.2rem;
+    }
+    .topic-label { font-size: 0.72rem; color:#64748b; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:2px; }
+    .topic-value { font-size: 0.97rem; color:#e2e8f0; font-weight:500; }
+    
+    .tabs { display: flex; border-bottom: 1px solid #334155; margin-bottom: 1rem; overflow-x: auto; }
+    .tab { padding: 0.75rem 1.5rem; cursor: pointer; color: #94a3b8; font-weight: 500; border-bottom: 2px solid transparent; white-space: nowrap; }
+    .tab:hover { color: #cbd5e1; }
+    .tab.active { color: #3b82f6; border-bottom: 2px solid #3b82f6; }
+    
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    
+    .dim-header { font-size: 1.1rem; font-weight: 700; color: #e2e8f0; margin-bottom: 0.15rem; }
+    .dim-verdict { font-size: 0.9rem; color: #cbd5e1; margin-bottom: 0.6rem; font-style: italic; }
+    .risk-low    { background:#0d3321; color:#4ade80; padding:2px 10px; border-radius:999px; font-size:0.75rem; font-weight:700; }
+    .risk-medium { background:#3d2a05; color:#fbbf24; padding:2px 10px; border-radius:999px; font-size:0.75rem; font-weight:700; }
+    .risk-high   { background:#3d0d0d; color:#f87171; padding:2px 10px; border-radius:999px; font-size:0.75rem; font-weight:700; }
+    .dim-summary { background:#111827; border-left:3px solid #3b82f6; padding:0.6rem 0.9rem; border-radius:0 6px 6px 0; font-size:0.88rem; color:#94a3b8; margin-top:0.6rem; }
+    .point-item { padding: 0.3rem 0; font-size: 0.88rem; color: #cbd5e1; }
+</style>
+
+<div style="max-width: 1000px; margin: auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2 style="margin: 0;">📊 Search Details & Dimensions</h2>
+        <a href="/dimensions" style="color: #94a3b8; text-decoration: none;">&larr; Back to Dimensions</a>
+    </div>
+
+    <!-- Error Messaging -->
+    {% if error %}
+    <div style="background-color: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+        ⚠️ {{ error }}
+    </div>
+    {% endif %}
+    {% if success %}
+    <div style="background-color: rgba(34, 197, 94, 0.2); border: 1px solid #22c55e; color: #86efac; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+        ✅ {{ success }}
+    </div>
+    {% endif %}
+
+    <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+        <div class="topic-card" style="flex: 1; min-width: 250px;">
+            <div class="topic-label">Research Area</div>
+            <div class="topic-value">{{ search.area or '—' }}</div>
+            <div style="margin-top:0.6rem"></div>
+            <div class="topic-label">Research Domain</div>
+            <div class="topic-value">{{ search.domain or '—' }}</div>
+        </div>
+        <div class="topic-card" style="flex: 1; min-width: 250px;">
+            <div class="topic-label">Topic Name</div>
+            <div class="topic-value">{{ search.topic_name or search.topic or '—' }}</div>
+            <div style="margin-top:0.6rem"></div>
+            <div class="topic-label">Sources Searched</div>
+            <div class="topic-value">{{ search.sources | join(', ') or '—' }}</div>
+        </div>
+    </div>
+
+    <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 1.5rem; border-radius: 12px; border: 1px solid #334155;">
+        <div>
+            <h3 style="margin: 0 0 0.5rem 0; color: #f8fafc;">AI Evaluation</h3>
+            <p style="margin: 0; color: #94a3b8; font-size: 0.9rem;">
+                Evaluate this research topic across 7 key dimensions using Claude AI.
+            </p>
+        </div>
+        <form method="POST" action="/dimensions/{{ search.id }}/evaluate" style="margin: 0;">
+            <button type="submit" style="background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem; border-radius: 6px; border: none; font-weight: 500; cursor: pointer;">
+                {% if eval %}🔄 Re-evaluate (uses credits){% else %}🧠 Run Evaluation{% endif %}
+            </button>
+        </form>
+    </div>
+
+    {% if eval %}
+    <div style="margin-top: 2.5rem;">
+        <div class="tabs">
+            <div class="tab active" onclick="showTab(event, 'feasible')">🧪 Feasible</div>
+            <div class="tab" onclick="showTab(event, 'novel')">💡 Novel</div>
+            <div class="tab" onclick="showTab(event, 'relevant')">🎯 Relevant</div>
+            <div class="tab" onclick="showTab(event, 'ethical')">⚖️ Ethical</div>
+            <div class="tab" onclick="showTab(event, 'scope')">🔭 Scope</div>
+            <div class="tab" onclick="showTab(event, 'professor_view')">🎓 Professor View</div>
+            <div class="tab" onclick="showTab(event, 'career_alignment')">💼 Career</div>
+        </div>
+
+        {% set dims = [
+            ('feasible', '🧪 Feasible', eval.feasible),
+            ('novel', '💡 Novel', eval.novel),
+            ('relevant', '🎯 Relevant', eval.relevant),
+            ('ethical', '⚖️ Ethical', eval.ethical),
+            ('scope', '🔭 Scope', eval.scope),
+            ('professor_view', '🎓 Professor View', eval.professor_view),
+            ('career_alignment', '💼 Career Alignment', eval.career_alignment)
+        ] %}
+
+        {% for id, title, data in dims %}
+        <div id="{{ id }}" class="tab-content {% if loop.first %}active{% endif %}">
+            <div style="background: #1e293b; padding: 2rem; border-radius: 0 0 12px 12px; border: 1px solid #334155; border-top: none;">
+                {% if data %}
+                    {% set risk = data.riskLevel | default('Medium') %}
+                    {% set risk_class = 'risk-medium' %}
+                    {% if risk == 'Low' %}{% set risk_class = 'risk-low' %}{% endif %}
+                    {% if risk == 'High' %}{% set risk_class = 'risk-high' %}{% endif %}
+
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+                        <div>
+                            <div class="dim-header">{{ title }}</div>
+                            <div class="dim-verdict">{{ data.verdict }}</div>
+                        </div>
+                        <span class="{{ risk_class }}">{{ risk }} Risk</span>
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Key Points:</strong>
+                    </div>
+                    
+                    {% for point in data.points %}
+                        <div class="point-item">
+                            {% if ':' in point %}
+                                <strong>{{ point.split(':', 1)[0] }}:</strong>{{ point.split(':', 1)[1] }}
+                            {% else %}
+                                <span>&rarr; {{ point }}</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    {% if data.summary %}
+                    <div class="dim-summary">
+                        {{ data.summary }}
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <p style="color: #94a3b8;">No data available for this dimension.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Feedback Section -->
+        <div style="margin-top: 2rem; background: #1e293b; padding: 1.5rem; border-radius: 12px; border: 1px solid #334155;">
+            <h4 style="margin: 0 0 1rem 0; color: #f8fafc;">How was this evaluation?</h4>
+            <div style="display: flex; gap: 1rem;" id="feedback-buttons">
+                <button onclick="alert('Thanks for your feedback!');" style="background-color: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 6px; border: none; font-weight: 500; cursor: pointer;">👍 Liked it</button>
+                <button onclick="document.getElementById('unlike-form').style.display='block'; document.getElementById('feedback-buttons').style.display='none';" style="background-color: #f59e0b; color: white; padding: 0.5rem 1rem; border-radius: 6px; border: none; font-weight: 500; cursor: pointer;">👎 Needs Improvement</button>
+            </div>
+            <div id="unlike-form" style="display: none; margin-top: 1rem;">
+                <form method="POST" action="/dimensions/{{ search.id }}/evaluate">
+                    <label style="display: block; color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.5rem;">Please provide details on what you didn't like so we can rerun the evaluation efficiently:</label>
+                    <textarea name="feedback" rows="4" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; margin-bottom: 1rem;" placeholder="E.g., The feasible section didn't consider GPU cloud limits..."></textarea>
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="submit" style="background-color: #3b82f6; color: white; padding: 0.5rem 1.5rem; border-radius: 6px; border: none; font-weight: 500; cursor: pointer;">🔄 Rerun Evaluation with Feedback</button>
+                        <button type="button" onclick="document.getElementById('unlike-form').style.display='none'; document.getElementById('feedback-buttons').style.display='flex';" style="background-color: transparent; color: #94a3b8; padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #475569; cursor: pointer;">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div style="margin-top: 3rem;">
+        <h3 style="border-bottom: 1px solid #334155; padding-bottom: 0.5rem;">📚 References ({{ papers|length }})</h3>
+        {% if papers %}
+        <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+            {% for p in papers %}
+            <div style="background: #1e2130; border: 1px solid #2d3250; border-radius: 8px; padding: 1rem;">
+                <div style="font-weight: 600; margin-bottom: 0.25rem;">
+                    {% if p.url %}
+                    <a href="{{ p.url }}" target="_blank" style="color:#93c5fd; text-decoration:none;">{{ p.title }}</a>
+                    {% else %}
+                    <span style="color:#e2e8f0;">{{ p.title }}</span>
+                    {% endif %}
+                </div>
+                <div style="font-size: 0.85rem; color: #94a3b8;">
+                    {{ p.authors[:3] | join(', ') }}{% if p.authors|length > 3 %} et al.{% endif %}
+                    &bull; {{ p.year or 'n/a' }} 
+                    &bull; Citations: {{ p.citations or 0 }}
+                    <span style="background: #1e3a8a; color: #93c5fd; padding: 2px 8px; border-radius: 999px; margin-left: 10px; font-size: 0.7rem;">{{ p.source }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: #94a3b8;">No papers stored for this search.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function showTab(evt, tabId) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].className = tabcontent[i].className.replace(" active", "");
+    }
+    tablinks = document.getElementsByClassName("tab");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(tabId).className += " active";
+    evt.currentTarget.className += " active";
+}
+</script>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <h2 style="margin-top: 0; color: #f8fafc;">👤 Account Info</h2>
+    
+    {% if request.query_params.get('success') %}
+        <div style="background-color: #064e3b; color: #34d399; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; border: 1px solid #047857;">
+            Account information updated successfully.
+        </div>
+    {% endif %}
+
+    <div style="background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 2rem; margin-bottom: 2rem;">
+        <h3 style="color: #cbd5e1; margin-top: 0; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; margin-bottom: 1.5rem;">Signup Details</h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; color: #94a3b8;">
+            <div>
+                <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b;">Name</div>
+                <div style="color: #f8fafc; font-size: 1.1rem; margin-top: 0.2rem;">{{ user.name }}</div>
+            </div>
+            <div>
+                <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b;">Email Address</div>
+                <div style="color: #f8fafc; font-size: 1.1rem; margin-top: 0.2rem;">{{ user.email }}</div>
+            </div>
+            <div>
+                <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b;">University / Organization</div>
+                <div style="color: #f8fafc; font-size: 1.1rem; margin-top: 0.2rem;">{{ user.university or 'N/A' }}</div>
+            </div>
+            <div>
+                <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b;">Area of Interest</div>
+                <div style="color: #f8fafc; font-size: 1.1rem; margin-top: 0.2rem;">{{ user.area_interest or 'N/A' }}</div>
+            </div>
+            <div>
+                <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b;">Domain of Interest</div>
+                <div style="color: #f8fafc; font-size: 1.1rem; margin-top: 0.2rem;">{{ user.domain_interest or 'N/A' }}</div>
+            </div>
+            <div>
+                <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b;">Specialization</div>
+                <div style="color: #f8fafc; font-size: 1.1rem; margin-top: 0.2rem;">{{ user.specialization or 'N/A' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div style="background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 2rem;">
+        <h3 style="color: #cbd5e1; margin-top: 0; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; margin-bottom: 1.5rem;">Additional Contact Information</h3>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 1.5rem;">Provide your contact and location details to help us personalize your experience. These fields are optional.</p>
+
+        <form method="POST" action="/account">
+            <div style="margin-bottom: 1.25rem;">
+                <label style="display: block; color: #cbd5e1; margin-bottom: 0.5rem;">Phone Number (with Country Code)</label>
+                <input type="text" name="phone" value="{{ user.phone or '' }}" placeholder="+1 234 567 8900" style="width: 100%; padding: 0.75rem; background-color: #0f172a; border: 1px solid #334155; border-radius: 6px; color: white; box-sizing: border-box;">
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
+                <div>
+                    <label style="display: block; color: #cbd5e1; margin-bottom: 0.5rem;">Place / Address Line</label>
+                    <input type="text" name="place" value="{{ user.place or '' }}" placeholder="e.g. 123 Research Blvd" style="width: 100%; padding: 0.75rem; background-color: #0f172a; border: 1px solid #334155; border-radius: 6px; color: white; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="display: block; color: #cbd5e1; margin-bottom: 0.5rem;">City</label>
+                    <input type="text" name="city" value="{{ user.city or '' }}" placeholder="e.g. San Francisco" style="width: 100%; padding: 0.75rem; background-color: #0f172a; border: 1px solid #334155; border-radius: 6px; color: white; box-sizing: border-box;">
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 2rem;">
+                <label style="display: block; color: #cbd5e1; margin-bottom: 0.5rem;">Country</label>
+                <input type="text" name="country" value="{{ user.country or '' }}" placeholder="e.g. United States" style="width: 100%; padding: 0.75rem; background-color: #0f172a; border: 1px solid #334155; border-radius: 6px; color: white; box-sizing: border-box;">
+            </div>
+            
+            <button type="submit" style="background-color: #3b82f6; color: white; border: none; padding: 0.75rem 2rem; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 500;">Save Changes</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

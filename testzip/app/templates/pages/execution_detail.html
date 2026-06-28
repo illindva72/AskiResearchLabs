@@ -43,15 +43,15 @@
             <h4 style="margin: 0 0 1rem 0; color: #60a5fa; display: flex; align-items: center; gap: 0.5rem;">
                 <span>📊</span> Model Generation Flowchart
             </h4>
-            <div style="color: #cbd5e1; line-height: 1.6; font-size: 0.95rem;">{{ factors.flowchart | safe }}</div>
+            <div style="color: #cbd5e1; line-height: 1.6; font-size: 0.95rem; white-space: pre-wrap;">{{ factors.flowchart | safe }}</div>
         </div>
 
         <!-- Dataset -->
         <div style="background: #1e293b; padding: 1.5rem; border-radius: 12px; border: 1px solid #334155;">
             <h4 style="margin: 0 0 1rem 0; color: #f472b6; display: flex; align-items: center; gap: 0.5rem;">
-                <span>📂</span> Sample Dataset & Public Sources
+                <span>📂</span> Sample Dataset & Synthetic Augmentation
             </h4>
-            <div style="color: #cbd5e1; line-height: 1.6; font-size: 0.95rem;">{{ factors.dataset | safe }}</div>
+            <div style="color: #cbd5e1; line-height: 1.6; font-size: 0.95rem; white-space: pre-wrap;">{{ factors.dataset | safe }}</div>
         </div>
 
         <!-- Input Variables -->
@@ -59,7 +59,7 @@
             <h4 style="margin: 0 0 1rem 0; color: #34d399; display: flex; align-items: center; gap: 0.5rem;">
                 <span>📥</span> Input Variables
             </h4>
-            <div style="color: #cbd5e1; line-height: 1.6; font-size: 0.95rem;">{{ factors.input_vars | safe }}</div>
+            <div style="color: #cbd5e1; line-height: 1.6; font-size: 0.95rem; white-space: pre-wrap;">{{ factors.input_vars | safe }}</div>
         </div>
 
         <!-- Output Variables -->
@@ -67,7 +67,7 @@
             <h4 style="margin: 0 0 1rem 0; color: #fbbf24; display: flex; align-items: center; gap: 0.5rem;">
                 <span>📤</span> Output Variable(s)
             </h4>
-            <div style="color: #cbd5e1; line-height: 1.6; font-size: 0.95rem;">{{ factors.output_vars | safe }}</div>
+            <div style="color: #cbd5e1; line-height: 1.6; font-size: 0.95rem; white-space: pre-wrap;">{{ factors.output_vars | safe }}</div>
         </div>
 
         <!-- Matching Papers -->

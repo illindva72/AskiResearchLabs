@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 1000px; margin: auto;">
+    <h2 style="margin-top: 0;">🛠️ Model Execution Factors</h2>
+    <p style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 2rem;">
+        Generate and view realistic execution plans, flowcharts, datasets, and variables for your research topics.
+    </p>
+
+    {% if searches %}
+    <div style="display: grid; gap: 1rem;">
+        {% for s in searches %}
+        <div style="background-color: #1e293b; padding: 1.5rem; border-radius: 12px; border: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 style="margin: 0 0 0.5rem 0; color: #f8fafc;">{{ s.topic_name or s.topic }}</h3>
+                <div style="color: #94a3b8; font-size: 0.85rem; display: flex; gap: 1rem;">
+                    <span><strong>Area:</strong> {{ s.area or 'N/A' }}</span>
+                    <span><strong>Domain:</strong> {{ s.domain or 'N/A' }}</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <a href="/execution/{{ s.id }}" style="background-color: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 0.9rem;">View / Generate Factors</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="background-color: #1e293b; padding: 3rem; border-radius: 12px; border: 1px solid #334155; text-align: center;">
+        <h3 style="color: #f8fafc; margin-top: 0;">No searches found</h3>
+        <p style="color: #94a3b8; margin-bottom: 1.5rem;">You haven't run any research searches yet.</p>
+        <a href="/search" style="background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: 500;">Run a Search</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

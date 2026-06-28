@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: auto;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+        <div>
+            <h2 style="margin-top: 0; margin-bottom: 0.5rem;">📈 Opportunity Dashboard</h2>
+            <div style="color: #94a3b8; font-size: 0.95rem;">
+                <strong>Topic:</strong> {{ search.topic_name or search.topic }}
+            </div>
+        </div>
+        <a href="/opportunity" style="color: #94a3b8; text-decoration: none;">&larr; Back to list</a>
+    </div>
+
+    {% if error %}
+    <div style="background-color: #ef444420; border: 1px solid #ef4444; color: #fca5a5; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <div style="background-color: #1e293b; padding: 1.5rem; border-radius: 12px; border: 1px solid #334155; margin-bottom: 2rem;">
+        <h3 style="margin-top: 0;">Generate/Refresh Score</h3>
+        <form method="POST" action="/opportunity/{{ search.id }}/evaluate" style="display: flex; gap: 1rem; align-items: flex-end;">
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <label for="profile" style="color: #cbd5e1; font-size: 0.85rem;">Scoring Profile</label>
+                <select name="profile" id="profile" style="background-color: #0f172a; border: 1px solid #334155; color: white; padding: 0.5rem; border-radius: 4px; width: 200px;">
+                    <option value="Default" {% if score_data and score_data.profile == "Default" %}selected{% endif %}>Default</option>
+                    <option value="Startup" {% if score_data and score_data.profile == "Startup" %}selected{% endif %}>Startup (Values Market & ROI)</option>
+                    <option value="Research" {% if score_data and score_data.profile == "Research" %}selected{% endif %}>Research (Values Data & Feasibility)</option>
+                    <option value="Enterprise" {% if score_data and score_data.profile == "Enterprise" %}selected{% endif %}>Enterprise (Values Risk & Explainability)</option>
+                </select>
+            </div>
+            <button type="submit" style="background-color: #3b82f6; color: white; padding: 0.5rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; height: 35px;">
+                {% if score_data %}Update Profile{% else %}Evaluate Opportunity{% endif %}
+            </button>
+        </form>
+        {% if score_data %}
+        <p style="color: #10b981; font-size: 0.8rem; margin-top: 0.5rem; margin-bottom: 0;">✓ Already evaluated. Profile updates are instant and do not use API credits.</p>
+        {% else %}
+        <p style="color: #64748b; font-size: 0.8rem; margin-top: 0.5rem; margin-bottom: 0;">This will call the Claude API and may take ~10-20 seconds.</p>
+        {% endif %}
+    </div>
+
+    {% if score_data %}
+    
+    <!-- Top Score Banner -->
+    <div style="display: flex; gap: 2rem; margin-bottom: 2rem;">
+        <div style="flex: 1; background-color: #0f172a; border: 1px solid #3b82f6; padding: 2rem; border-radius: 12px; text-align: center;">
+            <div style="font-size: 1rem; color: #94a3b8; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">Opportunity Score</div>
+            <div style="font-size: 4rem; font-weight: 800; color: {% if score_data.total_score >= 80 %}#10b981{% elif score_data.total_score >= 60 %}#eab308{% else %}#ef4444{% endif %}; line-height: 1.2;">
+                {{ score_data.total_score }}<span style="font-size: 2rem; color: #64748b;">/100</span>
+            </div>
+            <div style="font-size: 1.2rem; color: #f8fafc; margin-top: 0.5rem;">{{ score_data.rating }}</div>
+        </div>
+    </div>
+
+    <!-- Charts Section (Plotly) -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+        <div style="background-color: #1e293b; padding: 1rem; border-radius: 12px; border: 1px solid #334155;">
+            <h4 style="margin-top: 0; color: #e2e8f0; text-align: center;">Dimension Scores (Radar)</h4>
+            <div id="radarChart" style="width:100%; height:400px;"></div>
+        </div>
+        <div style="background-color: #1e293b; padding: 1rem; border-radius: 12px; border: 1px solid #334155;">
+            <h4 style="margin-top: 0; color: #e2e8f0; text-align: center;">Weighted Contribution</h4>
+            <div id="barChart" style="width:100%; height:400px;"></div>
+        </div>
+    </div>
+
+    <!-- Detailed Breakdown -->
+    <div style="background-color: #1e293b; border-radius: 12px; border: 1px solid #334155; overflow: hidden;">
+        <div style="padding: 1.5rem; border-bottom: 1px solid #334155;">
+            <h3 style="margin: 0; color: #f8fafc;">Detailed Analysis (Profile: {{ score_data.profile }})</h3>
+        </div>
+        <div style="padding: 1.5rem;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="color: #94a3b8; font-size: 0.85rem; text-transform: uppercase;">
+                        <th style="padding-bottom: 1rem; border-bottom: 1px solid #334155; width: 25%;">Dimension</th>
+                        <th style="padding-bottom: 1rem; border-bottom: 1px solid #334155; width: 10%;">Score</th>
+                        <th style="padding-bottom: 1rem; border-bottom: 1px solid #334155; width: 10%;">Weight</th>
+                        <th style="padding-bottom: 1rem; border-bottom: 1px solid #334155; width: 55%;">AI Reasoning</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dim_name, dim_data in score_data.dimensions.items() %}
+                    <tr style="border-bottom: 1px solid #33415533;">
+                        <td style="padding: 1rem 0; font-weight: 500; color: #e2e8f0;">{{ dim_name }}</td>
+                        <td style="padding: 1rem 0;">
+                            <span style="background-color: {% if dim_data.score >= 8 %}#10b98120{% elif dim_data.score >= 5 %}#eab30820{% else %}#ef444420{% endif %}; color: {% if dim_data.score >= 8 %}#34d399{% elif dim_data.score >= 5 %}#fbbf24{% else %}#f87171{% endif %}; padding: 0.2rem 0.6rem; border-radius: 4px; font-weight: bold;">
+                                {{ dim_data.score }}/10
+                            </span>
+                        </td>
+                        <td style="padding: 1rem 0; color: #94a3b8;">{{ dim_data.weight_percent }}%</td>
+                        <td style="padding: 1rem 0; color: #cbd5e1; font-size: 0.9rem;">{{ dim_data.reason }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Inject Plotly CDN -->
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <script>
+        const dimensionsData = {{ score_data.dimensions | tojson | safe }};
+        
+        const labels = Object.keys(dimensionsData);
+        const scores = labels.map(l => dimensionsData[l].score);
+        const weightedScores = labels.map(l => dimensionsData[l].weighted_score);
+        
+        // Radar Chart
+        var radarData = [{
+            type: 'scatterpolar',
+            r: scores,
+            theta: labels,
+            fill: 'toself',
+            name: 'Raw Score',
+            line: {color: '#3b82f6'}
+        }];
+        
+        var radarLayout = {
+            polar: {
+                radialaxis: { visible: true, range: [0, 10], color: '#64748b' },
+                angularaxis: { color: '#cbd5e1' },
+                bgcolor: 'transparent'
+            },
+            paper_bgcolor: 'transparent',
+            plot_bgcolor: 'transparent',
+            margin: {l:40, r:40, t:40, b:40},
+            font: {color: '#cbd5e1'}
+        };
+        
+        Plotly.newPlot('radarChart', radarData, radarLayout, {displayModeBar: false});
+        
+        // Bar Chart (Weighted Contribution)
+        var barData = [{
+            x: labels,
+            y: weightedScores,
+            type: 'bar',
+            marker: {
+                color: '#10b981'
+            }
+        }];
+        
+        var barLayout = {
+            paper_bgcolor: 'transparent',
+            plot_bgcolor: 'transparent',
+            margin: {l:40, r:40, t:40, b:80},
+            font: {color: '#cbd5e1'},
+            xaxis: {
+                tickangle: -45,
+                color: '#cbd5e1'
+            },
+            yaxis: {
+                title: 'Contribution to Score (out of 10)',
+                color: '#cbd5e1',
+                gridcolor: '#334155'
+            }
+        };
+        
+        Plotly.newPlot('barChart', barData, barLayout, {displayModeBar: false});
+    </script>
+    
+    {% endif %}
+</div>
+{% endblock %}
