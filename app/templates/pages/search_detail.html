@@ -71,11 +71,13 @@
                 Evaluate this research topic across 7 key dimensions using Claude AI.
             </p>
         </div>
+        {% if not eval %}
         <form method="POST" action="/dimensions/{{ search.id }}/evaluate" style="margin: 0;">
             <button type="submit" style="background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem; border-radius: 6px; border: none; font-weight: 500; cursor: pointer;">
-                {% if eval %}🔄 Re-evaluate (uses credits){% else %}🧠 Run Evaluation{% endif %}
+                🧠 Run Evaluation
             </button>
         </form>
+        {% endif %}
     </div>
 
     {% if eval %}
@@ -177,11 +179,24 @@
                     <span style="color:#e2e8f0;">{{ p.title }}</span>
                     {% endif %}
                 </div>
-                <div style="font-size: 0.85rem; color: #94a3b8;">
-                    {{ p.authors[:3] | join(', ') }}{% if p.authors|length > 3 %} et al.{% endif %}
-                    &bull; {{ p.year or 'n/a' }} 
-                    &bull; Citations: {{ p.citations or 0 }}
-                    <span style="background: #1e3a8a; color: #93c5fd; padding: 2px 8px; border-radius: 999px; margin-left: 10px; font-size: 0.7rem;">{{ p.source }}</span>
+                <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px;">
+                    <span style="background: #1e3a8a; color: #93c5fd; padding: 2px 8px; border-radius: 999px; font-weight: bold; font-size: 0.7rem;">{{ p.source }}</span>
+                    <span>{{ p.authors[:3] | join(', ') }}{% if p.authors|length > 3 %} et al.{% endif %}</span>
+                    <span>&bull;</span>
+                    <span>{{ p.year or 'n/a' }}</span>
+                    <span>&bull;</span>
+                    <span>Citations: {{ p.citations or 0 }}</span>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.5rem;">
+                    {% if p.rank %}
+                    <span style="font-size: 0.8rem; color: #10b981; font-weight: bold;">Conceptual Match (Rank {{ p.rank }})</span>
+                    {% else %}
+                    <div style="height: 6px; width: 100px; border-radius: 3px; background: #334155; overflow: hidden;">
+                        <div style="height: 100%; width: {{ p.relevance_score }}%; background: linear-gradient(90deg, #3b82f6, #8b5cf6);"></div>
+                    </div>
+                    <span style="font-size: 0.72rem; color: #94a3b8;">Relevance {{ p.relevance_score }}%</span>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}

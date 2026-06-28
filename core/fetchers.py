@@ -15,6 +15,7 @@ import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Optional
 import requests
+import datetime
 
 HEADERS = {"User-Agent": "AskiResearchLabs/1.0 (mailto:research@tracker.app)"}
 TIMEOUT = 12
@@ -27,7 +28,8 @@ OPENALEX_ACM_ID  = "P4310319798"
 
 def _fetch_openalex_publisher(query: str, publisher_id: str, limit: int) -> list:
     try:
-        filter_val = f"primary_location.source.publisher_lineage:{publisher_id}"
+        min_year = datetime.datetime.now().year - 2
+        filter_val = f"primary_location.source.publisher_lineage:{publisher_id},publication_year:>{min_year-1},primary_location.source.type:journal"
         fields = ("title,publication_year,primary_location,cited_by_count,"
                   "doi,open_access,authorships,abstract_inverted_index")
         url = (
@@ -48,12 +50,15 @@ def _fetch_openalex_publisher(query: str, publisher_id: str, limit: int) -> list
 
 def _fetch_openalex_broad(query: str, limit: int) -> list:
     try:
+        min_year = datetime.datetime.now().year - 2
+        filter_val = f"publication_year:>{min_year-1},primary_location.source.type:journal"
         fields = ("title,publication_year,primary_location,cited_by_count,"
                   "doi,open_access,authorships,abstract_inverted_index")
         url = (
             f"https://api.openalex.org/works"
             f"?search={requests.utils.quote(query)}"
             f"&per-page={limit}"
+            f"&filter={requests.utils.quote(filter_val)}"
             f"&select={fields}"
             f"&sort=relevance_score:desc"
         )
@@ -67,12 +72,14 @@ def _fetch_openalex_broad(query: str, limit: int) -> list:
 
 def _fetch_crossref_member(query: str, member_id: str, limit: int) -> list:
     try:
+        min_year = datetime.datetime.now().year - 2
         fields = "title,author,abstract,published,container-title,DOI,is-referenced-by-count"
+        filter_val = f"member:{member_id},type:journal-article,from-pub-date:{min_year}-01-01"
         url = (
             f"https://api.crossref.org/works"
             f"?query={requests.utils.quote(query)}"
             f"&rows={limit}"
-            f"&filter=member:{member_id}"
+            f"&filter={filter_val}"
             f"&select={fields}"
             f"&sort=relevance"
         )
@@ -93,7 +100,7 @@ def _fetch_arxiv(query: str, limit: int) -> list:
         url = (
             f"https://export.arxiv.org/api/query"
             f"?search_query={arxiv_query}"
-            f"&start=0&max_results={limit}"
+            f"&start=0&max_results={limit * 3}"
             f"&sortBy=relevance&sortOrder=descending"
         )
         r = requests.get(url, headers={"User-Agent": "AskiResearchLabs/1.0"}, timeout=TIMEOUT)
@@ -122,7 +129,8 @@ def _fetch_arxiv(query: str, limit: int) -> list:
                 for name in [author.find("atom:name", ns)]
                 if name is not None
             ]
-            if title:
+            min_year = datetime.datetime.now().year - 2
+            if title and year and year >= min_year:
                 entries.append({
                     "title": title,
                     "abstract": abstract,
@@ -130,7 +138,7 @@ def _fetch_arxiv(query: str, limit: int) -> list:
                     "year": year,
                     "authors": authors,
                 })
-        return entries
+        return entries[:limit]
     except Exception:
         return []
 

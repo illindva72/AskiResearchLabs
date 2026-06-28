@@ -309,7 +309,11 @@ async def execution_detail_page(request: Request, search_id: int):
     })
 
 @router.post("/execution/{search_id}/generate")
-async def generate_execution_factors(request: Request, search_id: int):
+async def generate_execution_factors(
+    request: Request, 
+    search_id: int,
+    feedback: str = Form(None)
+):
     user = get_current_user_from_cookie(request)
     if not user:
         return RedirectResponse(url="/auth/login", status_code=302)
@@ -319,6 +323,9 @@ async def generate_execution_factors(request: Request, search_id: int):
         return RedirectResponse(url="/execution", status_code=302)
         
     papers = db.get_papers_for_search(search_id)
+    
+    if feedback:
+        db.create_evaluation_feedback(search_id, user["id"], feedback)
     
     import time
     from core.evaluate import generate_prerequisites
@@ -394,7 +401,11 @@ async def opportunity_detail_page(request: Request, search_id: int):
     })
 
 @router.post("/opportunity/{search_id}/evaluate")
-async def generate_opportunity_score(request: Request, search_id: int):
+async def generate_opportunity_score(
+    request: Request, 
+    search_id: int,
+    feedback: str = Form(None)
+):
     user = get_current_user_from_cookie(request)
     if not user:
         return RedirectResponse(url="/auth/login", status_code=302)
@@ -406,8 +417,12 @@ async def generate_opportunity_score(request: Request, search_id: int):
     form = await request.form()
     profile = form.get("profile", "Default")
     
+    if feedback:
+        db.create_evaluation_feedback(search_id, user["id"], feedback)
+    
     existing_score = db.get_opportunity_score_for_search(search_id)
-    existing_dimensions = existing_score["dimensions"] if existing_score else None
+    # If feedback is provided, force a regeneration by ignoring existing dimensions
+    existing_dimensions = existing_score["dimensions"] if existing_score and not feedback else None
         
     import time
     from core.evaluate import evaluate_opportunity

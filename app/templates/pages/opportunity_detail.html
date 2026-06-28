@@ -99,6 +99,26 @@
         </div>
     </div>
 
+    <!-- Feedback Section -->
+    <div style="background: #1e293b; padding: 1.5rem; border-radius: 12px; border: 1px solid #334155; margin-top: 2rem;">
+        <h4 style="margin: 0 0 1rem 0; color: #f8fafc;">How was this evaluation?</h4>
+        <div style="display: flex; gap: 1rem;" id="feedback-buttons">
+            <button onclick="alert('Thanks for your feedback!');" style="background-color: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 6px; border: none; font-weight: 500; cursor: pointer;">👍 Liked it</button>
+            <button onclick="document.getElementById('unlike-form').style.display='block'; document.getElementById('feedback-buttons').style.display='none';" style="background-color: #f59e0b; color: white; padding: 0.5rem 1rem; border-radius: 6px; border: none; font-weight: 500; cursor: pointer;">👎 Needs Improvement</button>
+        </div>
+        <div id="unlike-form" style="display: none; margin-top: 1rem;">
+            <form method="POST" action="/opportunity/{{ search.id }}/evaluate">
+                <input type="hidden" name="profile" value="{{ score_data.profile }}">
+                <label style="display: block; color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.5rem;">Please provide details on what you didn't like so we can rerun the evaluation efficiently:</label>
+                <textarea name="feedback" rows="4" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; margin-bottom: 1rem;" placeholder="E.g., The scoring seems biased against qualitative research..."></textarea>
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" style="background-color: #3b82f6; color: white; padding: 0.5rem 1.5rem; border-radius: 6px; border: none; font-weight: 500; cursor: pointer;">🔄 Rerun Evaluation with Feedback</button>
+                    <button type="button" onclick="document.getElementById('unlike-form').style.display='none'; document.getElementById('feedback-buttons').style.display='flex';" style="background-color: transparent; color: #94a3b8; padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #475569; cursor: pointer;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Inject Plotly CDN -->
     <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
     <script>

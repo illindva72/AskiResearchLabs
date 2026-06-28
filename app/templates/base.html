@@ -78,7 +78,7 @@
     <main class="content">
         <!-- API Timing Banners -->
         <div id="apiTimerBanner" style="display: none; background-color: #3b82f6; color: white; text-align: center; padding: 0.75rem; font-weight: bold; position: sticky; top: 0; z-index: 1000; border-radius: 6px; margin-bottom: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-            ⏳ Processing API Call... <span id="apiTimerValue">0</span> seconds elapsed. (AppSail Timeout at 30s)
+            ⏳ Processing API Call... <span id="apiTimerValue">0</span> seconds elapsed. (Default Timeout at 45s)
         </div>
         <div id="apiSuccessBanner" style="display: none; background-color: #10b981; color: white; text-align: center; padding: 0.75rem; font-weight: bold; position: sticky; top: 0; z-index: 1000; border-radius: 6px; margin-bottom: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
             <!-- Filled dynamically -->
@@ -104,7 +104,7 @@
                 forms.forEach(form => {
                     form.addEventListener('submit', () => {
                         const action = form.getAttribute('action') || '';
-                        if (action.includes('/generate') || action.includes('/evaluate')) {
+                        if (action.includes('/generate') || action.includes('/evaluate') || action.includes('/search')) {
                             const timerBanner = document.getElementById('apiTimerBanner');
                             const timerValue = document.getElementById('apiTimerValue');
                             timerBanner.style.display = 'block';
@@ -114,7 +114,7 @@
                             
                             const interval = setInterval(() => {
                                 elapsed++;
-                                if (elapsed >= 30) {
+                                if (elapsed >= 45) {
                                     timerValue.innerText = elapsed + " (Approaching Timeout!)";
                                     timerBanner.style.backgroundColor = '#ef4444'; // Red
                                 } else {
