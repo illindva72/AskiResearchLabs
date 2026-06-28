@@ -76,6 +76,57 @@
     </header>
     
     <main class="content">
+        <!-- API Timing Banners -->
+        <div id="apiTimerBanner" style="display: none; background-color: #3b82f6; color: white; text-align: center; padding: 0.75rem; font-weight: bold; position: sticky; top: 0; z-index: 1000; border-radius: 6px; margin-bottom: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+            ⏳ Processing API Call... <span id="apiTimerValue">0</span> seconds elapsed. (AppSail Timeout at 30s)
+        </div>
+        <div id="apiSuccessBanner" style="display: none; background-color: #10b981; color: white; text-align: center; padding: 0.75rem; font-weight: bold; position: sticky; top: 0; z-index: 1000; border-radius: 6px; margin-bottom: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+            <!-- Filled dynamically -->
+        </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                // Show success banner if time_taken is in URL
+                const params = new URLSearchParams(window.location.search);
+                const timeTaken = params.get('time_taken');
+                if (timeTaken) {
+                    const banner = document.getElementById('apiSuccessBanner');
+                    banner.innerHTML = `✅ API call completed successfully in <strong>${timeTaken} seconds</strong>.`;
+                    banner.style.display = 'block';
+                    setTimeout(() => { banner.style.display = 'none'; }, 15000);
+                    
+                    // Clean up URL without reloading
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+
+                // Attach submit event to forms for long API calls
+                const forms = document.querySelectorAll('form');
+                forms.forEach(form => {
+                    form.addEventListener('submit', () => {
+                        const action = form.getAttribute('action') || '';
+                        if (action.includes('/generate') || action.includes('/evaluate')) {
+                            const timerBanner = document.getElementById('apiTimerBanner');
+                            const timerValue = document.getElementById('apiTimerValue');
+                            timerBanner.style.display = 'block';
+                            
+                            let elapsed = 0;
+                            timerValue.innerText = elapsed;
+                            
+                            const interval = setInterval(() => {
+                                elapsed++;
+                                if (elapsed >= 30) {
+                                    timerValue.innerText = elapsed + " (Approaching Timeout!)";
+                                    timerBanner.style.backgroundColor = '#ef4444'; // Red
+                                } else {
+                                    timerValue.innerText = elapsed;
+                                }
+                            }, 1000);
+                        }
+                    });
+                });
+            });
+        </script>
+
         {% block content %}
         {% endblock %}
     </main>

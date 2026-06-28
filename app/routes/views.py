@@ -225,7 +225,10 @@ async def evaluate_search_route(
     if feedback:
         db.create_evaluation_feedback(search_id, user["id"], feedback)
     
+    import time
     from core.evaluate import evaluate_research
+    
+    start_time = time.time()
     try:
         result = evaluate_research(
             area=search.get("area", ""),
@@ -266,7 +269,9 @@ async def evaluate_search_route(
             "error": str(e)
         })
         
-    return RedirectResponse(url=f"/dimensions/{search_id}", status_code=302)
+    elapsed_time = time.time() - start_time
+    logger.info(f"API Call 'evaluate_research' for search {search_id} took {elapsed_time:.2f} seconds.")
+    return RedirectResponse(url=f"/dimensions/{search_id}?time_taken={elapsed_time:.2f}", status_code=302)
 
 @router.get("/bot")
 async def bot_page(request: Request):
@@ -315,7 +320,10 @@ async def generate_execution_factors(request: Request, search_id: int):
         
     papers = db.get_papers_for_search(search_id)
     
+    import time
     from core.evaluate import generate_prerequisites
+    
+    start_time = time.time()
     try:
         result = generate_prerequisites(
             area=search.get("area", ""),
@@ -351,7 +359,9 @@ async def generate_execution_factors(request: Request, search_id: int):
             "error": str(e)
         })
         
-    return RedirectResponse(url=f"/execution/{search_id}", status_code=302)
+    elapsed_time = time.time() - start_time
+    logger.info(f"API Call 'generate_prerequisites' for search {search_id} took {elapsed_time:.2f} seconds.")
+    return RedirectResponse(url=f"/execution/{search_id}?time_taken={elapsed_time:.2f}", status_code=302)
 
 # ─── Opportunity Score ─────────────────────────────────────────────────────────
 
@@ -399,7 +409,10 @@ async def generate_opportunity_score(request: Request, search_id: int):
     existing_score = db.get_opportunity_score_for_search(search_id)
     existing_dimensions = existing_score["dimensions"] if existing_score else None
         
+    import time
     from core.evaluate import evaluate_opportunity
+    
+    start_time = time.time()
     try:
         result = evaluate_opportunity(
             area=search.get("area", ""),
@@ -427,7 +440,9 @@ async def generate_opportunity_score(request: Request, search_id: int):
             "error": str(e)
         })
         
-    return RedirectResponse(url=f"/opportunity/{search_id}", status_code=302)
+    elapsed_time = time.time() - start_time
+    logger.info(f"API Call 'evaluate_opportunity' for search {search_id} took {elapsed_time:.2f} seconds.")
+    return RedirectResponse(url=f"/opportunity/{search_id}?time_taken={elapsed_time:.2f}", status_code=302)
 
 # ─── Account & Subscription ──────────────────────────────────────────────────
 
