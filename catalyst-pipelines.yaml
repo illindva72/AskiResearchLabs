@@ -1,0 +1,11 @@
+version: 1.0
+
+jobs:
+  deploy-to-appsail:
+    steps:
+      # Step 1: Install the Catalyst CLI globally
+      - npm install -g zcatalyst-cli
+      
+      # Step 2: Deploy the AppSail service
+      # Ensure $CATALYST_TOKEN is configured in your Catalyst Pipeline environment variables
+      - catalyst deploy --only appsail --token $CATALYST_TOKEN
