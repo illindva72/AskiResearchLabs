@@ -223,8 +223,8 @@ CRITICAL: Do NOT use ASCII art, boxes, or drawing characters. Just use a simple,
 </flowchart>
 
 <dataset>
-Provide the best possible public sources to refer for the dataset to work with. Ideally the dataset should be a minimum of 50-75K records and look realistic for a real-time scenario. 
-Important: The data sources should ONLY be from public sources where there is no issue with consent for using it. Do NOT provide any code to generate synthetic data. Format your response beautifully using HTML (e.g. <p>, <strong>, <ul>).
+Provide the most specific and best possible public sources to refer for the dataset to work with. Ideally the dataset should be a minimum of 50-75K records and look realistic for a real-time scenario. 
+Important: The data sources should ONLY be from public sources where there is no issue with consent for using it, and they MUST NOT require any premium/paid subscriptions. You MUST provide direct URLs/links to these public datasets. Do NOT provide any code to generate synthetic data. Format your response beautifully using HTML (e.g. <p>, <strong>, <ul>) and ensure the links are clickable <a> tags.
 </dataset>
 
 <input_vars>
