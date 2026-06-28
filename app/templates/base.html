@@ -76,7 +76,22 @@
     </header>
     
     <main class="content">
-        <!-- API Timing Banners -->
+        {% if usage_info %}
+            {% if usage_info.is_blocked %}
+                <div style="background-color: #ef4444; color: white; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center; font-weight: bold;">
+                    CRITICAL: Account suspended! You have exceeded your limit. Storage: {{ "%.1f"|format(usage_info.storage_mb) }}MB/10MB, API Calls: {{ usage_info.api_calls }}/50. Please upgrade.
+                </div>
+            {% elif usage_info.storage_crit or usage_info.api_crit %}
+                <div style="background-color: #f97316; color: white; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center; font-weight: bold;">
+                    CRITICAL WARNING: You are very close to your limit! Storage: {{ "%.1f"|format(usage_info.storage_mb) }}MB/10MB, API Calls: {{ usage_info.api_calls }}/50.
+                </div>
+            {% elif usage_info.storage_warn or usage_info.api_warn %}
+                <div style="background-color: #eab308; color: #1e293b; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center; font-weight: bold;">
+                    WARNING: You are approaching your free limits. Storage: {{ "%.1f"|format(usage_info.storage_mb) }}MB/10MB, API Calls: {{ usage_info.api_calls }}/50.
+                </div>
+            {% endif %}
+        {% endif %}
+        
         <div id="apiTimerBanner" style="display: none; background-color: #3b82f6; color: white; text-align: center; padding: 0.75rem; font-weight: bold; position: sticky; top: 0; z-index: 1000; border-radius: 6px; margin-bottom: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
             ⏳ Processing API Call... <span id="apiTimerValue">0</span> seconds elapsed. (Default Timeout at 45s)
         </div>
@@ -135,6 +150,46 @@
         &copy; 2026 AskiResearchLabs. All rights reserved.
     </footer>
 </div>
+
+<!-- Favorite Modal -->
+<div id="favoriteModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.8); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background-color: #1e293b; padding: 2rem; border-radius: 12px; border: 1px solid #334155; max-width: 400px; width: 90%;">
+        <h3 style="margin-top: 0; color: #f8fafc;">Add to Favorites</h3>
+        <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 1.5rem;">Why are you favoriting this search? (Optional)</p>
+        <form id="favoriteForm" method="POST" action="">
+            <input type="hidden" name="is_favorite" value="true">
+            <textarea name="reason" rows="3" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; margin-bottom: 1rem;" placeholder="e.g. Approved by university..."></textarea>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button type="button" onclick="document.getElementById('favoriteModal').style.display='none'" style="background: transparent; color: #94a3b8; border: none; cursor: pointer;">Cancel</button>
+                <button type="submit" style="background-color: #eab308; color: #1e293b; font-weight: bold; padding: 0.5rem 1.5rem; border-radius: 6px; border: none; cursor: pointer;">Save Favorite</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openFavoriteModal(searchId, currentIsFavorite) {
+        if (currentIsFavorite) {
+            // Un-favorite instantly
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/searches/' + searchId + '/favorite';
+            
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'is_favorite';
+            input.value = 'false';
+            
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+        } else {
+            // Open modal to favorite
+            document.getElementById('favoriteForm').action = '/searches/' + searchId + '/favorite';
+            document.getElementById('favoriteModal').style.display = 'flex';
+        }
+    }
+</script>
 
 <!-- Session Expiry Modal -->
 <div id="sessionModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.8); z-index: 9999; justify-content: center; align-items: center;">

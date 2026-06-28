@@ -15,6 +15,47 @@ templates = Jinja2Templates(directory="app/templates")
 # Initialize database to make sure it exists
 db.init_db()
 
+def get_usage_info(user: dict) -> Optional[dict]:
+    if not user or user.get("role") == "admin":
+        return None
+    
+    size_mb = db.get_user_storage_size(user["id"]) / (1024 * 1024)
+    api_calls = db.get_user_api_call_count(user["id"])
+    
+    storage_warn = size_mb >= 7.0 and size_mb < 9.0
+    storage_crit = size_mb >= 9.0
+    storage_blocked = size_mb >= 10.0
+    
+    api_warn = api_calls >= 30 and api_calls < 45
+    api_crit = api_calls >= 45
+    api_blocked = api_calls >= 50
+    
+    return {
+        "storage_mb": size_mb,
+        "api_calls": api_calls,
+        "storage_warn": storage_warn,
+        "storage_crit": storage_crit,
+        "storage_blocked": storage_blocked,
+        "api_warn": api_warn,
+        "api_crit": api_crit,
+        "api_blocked": api_blocked,
+        "is_blocked": storage_blocked or api_blocked
+    }
+
+original_template_response = templates.TemplateResponse
+
+def render_template(request: Request, name: str, context: dict, **kwargs):
+    user = context.get("user") or get_current_user_from_cookie(request)
+    if user:
+        usage = get_usage_info(user)
+        if usage:
+            context["usage_info"] = usage
+    if "request" not in context:
+        context["request"] = request
+    return original_template_response(request, name, context, **kwargs)
+
+templates.TemplateResponse = render_template
+
 @router.get("/")
 async def read_root(request: Request):
     user = get_current_user_from_cookie(request)
@@ -41,6 +82,11 @@ async def execute_search(
     user = get_current_user_from_cookie(request)
     if not user:
         return RedirectResponse(url="/auth/login", status_code=302)
+    
+    usage = get_usage_info(user)
+    if usage and usage.get("is_blocked"):
+        return templates.TemplateResponse(request, "pages/search.html", {"request": request, "error": "Your free account limits have been exceeded. Please upgrade to continue.", "papers": None})
+
     if not topic_name.strip():
         # Ideally add error handling context here
         return templates.TemplateResponse(request, "pages/search.html", {"request": request, "error": "Research Topic Name is required.", "papers": None})
@@ -78,6 +124,9 @@ async def execute_search(
         topic_details=topic_details,
     )
 
+    import time
+    t0 = time.time()
+    
     papers = fetchers.fetch_papers(
         search_id=search_rec["id"],
         area=area,
@@ -88,6 +137,9 @@ async def execute_search(
         limit=limit,
         document_text=doc_text,
     )
+    
+    t1 = time.time()
+    db.log_api_metric(user_id, search_rec["id"], "search", t1 - t0, False, "Anthropic")
 
     saved = []
     seen_dois = set()
@@ -219,6 +271,14 @@ async def evaluate_search_route(
     if not search or (user.get("role") != "admin" and search.get("user_id") != user["id"]):
         return RedirectResponse(url="/dimensions", status_code=302)
         
+    usage = get_usage_info(user)
+    if usage and usage.get("is_blocked"):
+        papers = db.get_papers_for_search(search_id)
+        return templates.TemplateResponse(request, "pages/search_detail.html", {
+            "request": request, "user": user, "search": search, "papers": papers,
+            "error": "Your free account limits have been exceeded. Please upgrade to continue."
+        })
+        
     papers = db.get_papers_for_search(search_id)
     eval_data = db.get_evaluation_for_search(search_id)
     
@@ -269,9 +329,10 @@ async def evaluate_search_route(
             "error": str(e)
         })
         
-    elapsed_time = time.time() - start_time
-    logger.info(f"API Call 'evaluate_research' for search {search_id} took {elapsed_time:.2f} seconds.")
-    return RedirectResponse(url=f"/dimensions/{search_id}?time_taken={elapsed_time:.2f}", status_code=302)
+    t1 = time.time()
+    db.log_api_metric(user["id"], search_id, "evaluate", t1 - start_time, is_reeval, "Anthropic")
+    logger.info(f"API Call 'evaluate_research' for search {search_id} took {t1 - start_time:.2f} seconds.")
+    return RedirectResponse(url=f"/dimensions/{search_id}?time_taken={round(t1 - start_time, 1)}", status_code=302)
 
 @router.get("/bot")
 async def bot_page(request: Request):
@@ -322,8 +383,17 @@ async def generate_execution_factors(
     if not search or (user.get("role") != "admin" and search.get("user_id") != user["id"]):
         return RedirectResponse(url="/execution", status_code=302)
         
+    usage = get_usage_info(user)
+    if usage and usage.get("is_blocked"):
+        factors = db.get_prerequisites_for_search(search_id)
+        return templates.TemplateResponse(request, "pages/execution_detail.html", {
+            "request": request, "user": user, "search": search, "factors": factors,
+            "error": "Your free account limits have been exceeded. Please upgrade to continue."
+        })
+        
     papers = db.get_papers_for_search(search_id)
     
+    is_reeval = bool(feedback)
     if feedback:
         db.create_evaluation_feedback(search_id, user["id"], feedback)
     
@@ -366,9 +436,10 @@ async def generate_execution_factors(
             "error": str(e)
         })
         
-    elapsed_time = time.time() - start_time
-    logger.info(f"API Call 'generate_prerequisites' for search {search_id} took {elapsed_time:.2f} seconds.")
-    return RedirectResponse(url=f"/execution/{search_id}?time_taken={elapsed_time:.2f}", status_code=302)
+    t1 = time.time()
+    db.log_api_metric(user["id"], search_id, "execution", t1 - start_time, is_reeval, "Anthropic")
+    logger.info(f"API Call 'generate_prerequisites' for search {search_id} took {t1 - start_time:.2f} seconds.")
+    return RedirectResponse(url=f"/execution/{search_id}?time_taken={round(t1 - start_time, 1)}", status_code=302)
 
 # ─── Opportunity Score ─────────────────────────────────────────────────────────
 
@@ -414,15 +485,24 @@ async def generate_opportunity_score(
     if not search or (user.get("role") != "admin" and search.get("user_id") != user["id"]):
         return RedirectResponse(url="/opportunity", status_code=302)
         
+    usage = get_usage_info(user)
+    if usage and usage.get("is_blocked"):
+        score_data = db.get_opportunity_score_for_search(search_id)
+        return templates.TemplateResponse(request, "pages/opportunity_detail.html", {
+            "request": request, "user": user, "search": search, "score_data": score_data,
+            "error": "Your free account limits have been exceeded. Please upgrade to continue."
+        })
+        
     form = await request.form()
     profile = form.get("profile", "Default")
     
-    if feedback:
+    is_reeval = bool(feedback)
+    if is_reeval:
         db.create_evaluation_feedback(search_id, user["id"], feedback)
     
     existing_score = db.get_opportunity_score_for_search(search_id)
     # If feedback is provided, force a regeneration by ignoring existing dimensions
-    existing_dimensions = existing_score["dimensions"] if existing_score and not feedback else None
+    existing_dimensions = existing_score["dimensions"] if existing_score and not is_reeval else None
         
     import time
     from core.evaluate import evaluate_opportunity
@@ -455,9 +535,25 @@ async def generate_opportunity_score(
             "error": str(e)
         })
         
-    elapsed_time = time.time() - start_time
-    logger.info(f"API Call 'evaluate_opportunity' for search {search_id} took {elapsed_time:.2f} seconds.")
-    return RedirectResponse(url=f"/opportunity/{search_id}?time_taken={elapsed_time:.2f}", status_code=302)
+    t1 = time.time()
+    model_name = "Local" if existing_dimensions else "Anthropic"
+    db.log_api_metric(user["id"], search_id, "opportunity", t1 - start_time, is_reeval, model_name)
+    logger.info(f"API Call 'evaluate_opportunity' for search {search_id} took {t1 - start_time:.2f} seconds.")
+    return RedirectResponse(url=f"/opportunity/{search_id}?time_taken={round(t1 - start_time, 1)}", status_code=302)
+
+# ─── Favorites ────────────────────────────────────────────────────────────────
+
+@router.post("/searches/{search_id}/favorite")
+async def toggle_favorite(request: Request, search_id: int, is_favorite: str = Form(...), reason: str = Form("")):
+    user = get_current_user_from_cookie(request)
+    if not user:
+        return RedirectResponse(url="/auth/login", status_code=302)
+    
+    fav_bool = is_favorite.lower() == 'true'
+    db.toggle_favorite_search(search_id, user["id"], fav_bool, reason)
+    
+    referer = request.headers.get("referer", "/history")
+    return RedirectResponse(url=referer, status_code=302)
 
 # ─── Account & Subscription ──────────────────────────────────────────────────
 

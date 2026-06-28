@@ -87,6 +87,16 @@ def init_db() -> None:
             dimensions       TEXT NOT NULL, -- JSON
             created_at       INTEGER NOT NULL
         );
+        CREATE TABLE IF NOT EXISTS api_metrics (
+            id               INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id          INTEGER REFERENCES users(id),
+            search_id        INTEGER REFERENCES searches(id),
+            page             TEXT NOT NULL,
+            time_taken       REAL NOT NULL,
+            is_reevaluation  BOOLEAN NOT NULL DEFAULT 0,
+            model_api        TEXT NOT NULL,
+            created_at       INTEGER NOT NULL
+        );
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             email TEXT UNIQUE NOT NULL,
@@ -143,9 +153,38 @@ def init_db() -> None:
         cur.executescript("ALTER TABLE prerequisites ADD COLUMN matching_papers TEXT NOT NULL DEFAULT '[]';")
     except sqlite3.OperationalError:
         pass
+    except sqlite3.OperationalError:
+        pass
+    try:
+        cur.execute("ALTER TABLE searches ADD COLUMN is_favorite BOOLEAN NOT NULL DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        cur.execute("ALTER TABLE searches ADD COLUMN favorite_reason TEXT")
+    except sqlite3.OperationalError:
+        pass
     conn.commit()
     conn.close()
 
+
+# ─── API Metrics ──────────────────────────────────────────────────────────────
+
+def log_api_metric(user_id: int, search_id: int, page: str, time_taken: float, is_reevaluation: bool, model_api: str) -> None:
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO api_metrics (user_id, search_id, page, time_taken, is_reevaluation, model_api, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (user_id, search_id, page, time_taken, is_reevaluation, model_api, int(time.time())))
+    conn.commit()
+    conn.close()
+
+def get_user_api_call_count(user_id: int) -> int:
+    conn = get_conn()
+    cur = conn.execute("SELECT COUNT(*) FROM api_metrics WHERE user_id = ?", (user_id,))
+    count = cur.fetchone()[0]
+    conn.close()
+    return count
 
 # ─── Searches ─────────────────────────────────────────────────────────────────
 
@@ -196,6 +235,16 @@ def _row_to_search(row) -> dict:
     d["sources"] = json.loads(d.get("sources", "[]"))
     return d
 
+
+def toggle_favorite_search(search_id: int, user_id: int, is_favorite: bool, reason: str = "") -> None:
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE searches SET is_favorite = ?, favorite_reason = ? WHERE id = ? AND user_id = ?",
+        (int(is_favorite), reason, search_id, user_id)
+    )
+    conn.commit()
+    conn.close()
 
 # ─── Papers ───────────────────────────────────────────────────────────────────
 
