@@ -137,6 +137,22 @@ def init_db() -> None:
         cur.executescript("ALTER TABLE users ADD COLUMN hashed_password TEXT;")
     except sqlite3.OperationalError:
         pass # Column already exists
+    
+    try:
+        cur.executescript("ALTER TABLE users ADD COLUMN successful_logins INTEGER DEFAULT 0;")
+    except sqlite3.OperationalError:
+        pass
+        
+    try:
+        cur.executescript("ALTER TABLE users ADD COLUMN failed_logins INTEGER DEFAULT 0;")
+    except sqlite3.OperationalError:
+        pass
+        
+    try:
+        cur.executescript("ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1;")
+    except sqlite3.OperationalError:
+        pass
+
     try:
         cur.executescript("ALTER TABLE users ADD COLUMN area_interest TEXT;")
     except sqlite3.OperationalError:
@@ -315,9 +331,70 @@ def update_user_info(user_id: int, phone: str, place: str, city: str, country: s
 
 def get_all_users() -> list[dict]:
     conn = get_conn()
-    rows = conn.execute("SELECT * FROM users ORDER BY created_at DESC").fetchall()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users ORDER BY created_at DESC")
+    rows = cur.fetchall()
     conn.close()
     return [dict(r) for r in rows]
+
+def get_all_users_with_stats() -> list[dict]:
+    users = get_all_users()
+    for u in users:
+        u["storage_mb"] = get_user_storage_size(u["id"]) / (1024 * 1024)
+        u["api_calls"] = get_user_api_call_count(u["id"])
+    return users
+
+def increment_successful_logins(user_id: int):
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("UPDATE users SET successful_logins = successful_logins + 1 WHERE id = ?", (user_id,))
+    conn.commit()
+    conn.close()
+
+def increment_failed_logins(user_id: int):
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("UPDATE users SET failed_logins = failed_logins + 1 WHERE id = ?", (user_id,))
+    conn.commit()
+    conn.close()
+
+def toggle_user_status(user_id: int, is_active: int):
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("UPDATE users SET is_active = ? WHERE id = ?", (is_active, user_id))
+    conn.commit()
+    conn.close()
+
+def get_all_tables() -> list[str]:
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
+    tables = [r["name"] for r in cur.fetchall()]
+    conn.close()
+    return tables
+
+def get_table_schema(table_name: str) -> list[dict]:
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(f"PRAGMA table_info({table_name})")
+    schema = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return schema
+
+def get_table_data(table_name: str, limit: int = 100, offset: int = 0) -> list[dict]:
+    conn = get_conn()
+    cur = conn.cursor()
+    # Basic protection against SQL injection on table name
+    if not table_name.isidentifier():
+        return []
+    try:
+        cur.execute(f"SELECT * FROM {table_name} LIMIT ? OFFSET ?", (limit, offset))
+        data = [dict(r) for r in cur.fetchall()]
+    except sqlite3.OperationalError:
+        data = []
+    finally:
+        conn.close()
+    return data
 
 def create_user(email: str, name: str, university: str, area_interest: str = None, domain_interest: str = None, specialization: str = None, role: str = 'user', hashed_password: str = None) -> dict:
     conn = get_conn()

@@ -282,7 +282,8 @@ async def evaluate_search_route(
     papers = db.get_papers_for_search(search_id)
     eval_data = db.get_evaluation_for_search(search_id)
     
-    if feedback:
+    is_reeval = bool(feedback)
+    if is_reeval:
         db.create_evaluation_feedback(search_id, user["id"], feedback)
     
     import time

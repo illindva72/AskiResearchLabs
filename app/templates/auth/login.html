@@ -18,24 +18,62 @@
 
     <form method="POST" action="/auth/login">
         <div style="margin-bottom: 1.25rem;">
+            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.9rem;">User Type</label>
+            <select name="login_type" id="login_type" onchange="toggleLoginType()" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; outline: none;">
+                <option value="user" {% if login_type == 'user' %}selected{% endif %}>User</option>
+                <option value="admin" {% if login_type == 'admin' %}selected{% endif %}>Admin</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 1.25rem;">
             <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.9rem;">Email Address</label>
             <input type="email" name="email" value="{{ email or '' }}" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; outline: none;">
         </div>
-        {% if otp_sent %}
-        <div style="margin-bottom: 2rem;">
-            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.9rem;">OTP Code</label>
-            <input type="text" name="otp" autocomplete="one-time-code" required style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; outline: none;">
+
+        <!-- User OTP Section -->
+        <div id="user_otp_section" style="{% if login_type == 'admin' %}display: none;{% endif %}">
+            {% if otp_sent %}
+            <div style="margin-bottom: 2rem;">
+                <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.9rem;">OTP Code</label>
+                <input type="text" name="otp" autocomplete="one-time-code" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; outline: none;">
+            </div>
+            <div style="margin-bottom: 1rem; color: #94a3b8; font-size: 0.9rem;">A one-time code has been sent from <strong>admin@askitech.org</strong>.</div>
+            <button type="submit" id="btn_verify_otp" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: none; background: #3b82f6; color: white; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+                Verify OTP
+            </button>
+            {% else %}
+            <button type="submit" id="btn_send_otp" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: none; background: #3b82f6; color: white; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+                Send OTP
+            </button>
+            {% endif %}
         </div>
-        <div style="margin-bottom: 1rem; color: #94a3b8; font-size: 0.9rem;">A one-time code has been sent from <strong>admin@askitech.org</strong>.</div>
-        <button type="submit" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: none; background: #3b82f6; color: white; font-weight: 600; cursor: pointer; transition: background 0.2s;">
-            Verify OTP
-        </button>
-        {% else %}
-        <button type="submit" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: none; background: #3b82f6; color: white; font-weight: 600; cursor: pointer; transition: background 0.2s;">
-            Send OTP
-        </button>
-        {% endif %}
+
+        <!-- Admin Password Section -->
+        <div id="admin_password_section" style="{% if login_type != 'admin' %}display: none;{% endif %} margin-bottom: 2rem;">
+            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #cbd5e1; font-size: 0.9rem;">Admin Password</label>
+            <input type="password" name="password" style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #e2e8f0; outline: none;">
+            <button type="submit" style="width: 100%; margin-top: 1.25rem; padding: 0.75rem; border-radius: 6px; border: none; background: #10b981; color: white; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+                Admin Login
+            </button>
+        </div>
     </form>
+    
+    <script>
+        function toggleLoginType() {
+            var type = document.getElementById("login_type").value;
+            var userSec = document.getElementById("user_otp_section");
+            var adminSec = document.getElementById("admin_password_section");
+            if (type === "admin") {
+                userSec.style.display = "none";
+                adminSec.style.display = "block";
+            } else {
+                userSec.style.display = "block";
+                adminSec.style.display = "none";
+            }
+        }
+        // Run once on load
+        toggleLoginType();
+    </script>
     
     <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: #64748b;">
         Don't have an account? <a href="/auth/signup" style="color: #60a5fa; text-decoration: none;">Sign Up</a>

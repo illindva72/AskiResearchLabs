@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto;">
+    <h2 style="margin-top: 0; color: #f8fafc;">👥 Users Management</h2>
+    <p style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 2rem;">
+        Monitor user activity, track API usage, and manage account statuses.
+    </p>
+
+    <div style="background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; overflow: hidden; padding: 1rem;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+            <thead>
+                <tr style="background-color: #0f172a; border-bottom: 1px solid #334155; color: #cbd5e1;">
+                    <th style="padding: 1rem;">ID</th>
+                    <th style="padding: 1rem;">Name / Email</th>
+                    <th style="padding: 1rem;">Role</th>
+                    <th style="padding: 1rem; text-align: center;">Successful Logins</th>
+                    <th style="padding: 1rem; text-align: center;">Failed Logins</th>
+                    <th style="padding: 1rem; text-align: center;">Storage (MB)</th>
+                    <th style="padding: 1rem; text-align: center;">API Calls</th>
+                    <th style="padding: 1rem; text-align: right;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr style="border-bottom: 1px solid #334155; {% if u.is_active == 0 %}opacity: 0.6;{% endif %}">
+                    <td style="padding: 1rem; color: #94a3b8;">{{ u.id }}</td>
+                    <td style="padding: 1rem;">
+                        <div style="color: #f8fafc; font-weight: bold;">{{ u.name }}</div>
+                        <div style="color: #64748b; font-size: 0.8rem;">{{ u.email }}</div>
+                    </td>
+                    <td style="padding: 1rem; color: {% if u.role == 'admin' %}#f59e0b{% else %}#94a3b8{% endif %};">
+                        {{ u.role|capitalize }}
+                    </td>
+                    <td style="padding: 1rem; text-align: center; color: #10b981;">{{ u.successful_logins|default(0) }}</td>
+                    <td style="padding: 1rem; text-align: center; color: {% if (u.failed_logins|default(0)) > 0 %}#ef4444{% else %}#64748b{% endif %};">{{ u.failed_logins|default(0) }}</td>
+                    
+                    <td style="padding: 1rem; text-align: center;">
+                        <span style="color: {% if u.storage_mb >= 10 %}#ef4444{% elif u.storage_mb >= 7 %}#f59e0b{% else %}#cbd5e1{% endif %}; font-weight: bold;">
+                            {{ "%.2f"|format(u.storage_mb) }}
+                        </span>
+                    </td>
+                    
+                    <td style="padding: 1rem; text-align: center;">
+                        <span style="color: {% if u.api_calls >= 50 %}#ef4444{% elif u.api_calls >= 30 %}#f59e0b{% else %}#cbd5e1{% endif %}; font-weight: bold;">
+                            {{ u.api_calls }}
+                        </span>
+                    </td>
+                    
+                    <td style="padding: 1rem; text-align: right;">
+                        {% if u.role != 'admin' %}
+                        <form method="POST" action="/admin/users/{{ u.id }}/toggle" style="margin: 0;">
+                            {% if u.is_active == 1 %}
+                                <input type="hidden" name="is_active" value="0">
+                                <button type="submit" style="background-color: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">Disable</button>
+                            {% else %}
+                                <input type="hidden" name="is_active" value="1">
+                                <button type="submit" style="background-color: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">Enable</button>
+                            {% endif %}
+                        </form>
+                        {% else %}
+                            <span style="color: #64748b; font-size: 0.8rem;">Cannot Disable</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not users %}
+                <tr>
+                    <td colspan="8" style="padding: 2rem; text-align: center; color: #94a3b8;">No users found.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

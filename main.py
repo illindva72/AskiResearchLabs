@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from app.routes import views, api, auth_views
+from app.routes import views, api, auth_views, admin_views
 from dotenv import load_dotenv
 import logging
 import os
@@ -39,6 +39,7 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.include_router(views.router)
 app.include_router(api.router)
 app.include_router(auth_views.router)
+app.include_router(admin_views.router)
 
 if __name__ == "__main__":
     import uvicorn

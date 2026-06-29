@@ -20,13 +20,57 @@ async def login(
     request: Request,
     response: Response,
     email: str = Form(...),
-    otp: Optional[str] = Form(None)
+    otp: Optional[str] = Form(None),
+    login_type: str = Form("user"),
+    password: Optional[str] = Form(None)
 ):
+    import os
+    admin_email = os.getenv("ADMIN_LOGIN_EMAIL")
+    admin_password = os.getenv("ADMIN_PASSWORD")
+
+    if admin_email and login_type == "admin":
+        if email != admin_email:
+            return templates.TemplateResponse(request, "auth/login.html", {
+                "request": request,
+                "error": "Invalid admin email.",
+                "email": email,
+                "login_type": "admin"
+            })
+            
+        if password == admin_password:
+            token_data = {"sub": email, "id": 0, "role": "admin", "name": "System Admin"}
+            access_token = create_access_token(data=token_data)
+            redirect = RedirectResponse(url="/", status_code=302)
+            from app.core.security import SESSION_EXPIRY_MINUTES
+            redirect.set_cookie(
+                key="access_token",
+                value=f"Bearer {access_token}",
+                httponly=True,
+                secure=False,
+                samesite="lax",
+                max_age=SESSION_EXPIRY_MINUTES * 60
+            )
+            return redirect
+        else:
+            return templates.TemplateResponse(request, "auth/login.html", {
+                "request": request,
+                "error": "Invalid admin password.",
+                "email": email,
+                "login_type": "admin"
+            })
+
     user = db.get_user_by_email(email)
     if not user:
         return templates.TemplateResponse(request, "auth/login.html", {
             "request": request,
             "error": "Email not registered. Please sign up first.",
+            "email": email
+        })
+        
+    if user.get("is_active") == 0:
+        return templates.TemplateResponse(request, "auth/login.html", {
+            "request": request,
+            "error": "Account has been disabled by an administrator.",
             "email": email
         })
 
@@ -44,12 +88,15 @@ async def login(
 
     current_time = int(time.time() * 1000)
     if user.get("otp") != otp or user.get("otp_expiry", 0) < current_time:
+        db.increment_failed_logins(user["id"])
         return templates.TemplateResponse(request, "auth/login.html", {
             "request": request,
             "error": "Invalid or expired OTP. Please request a new code.",
             "email": email,
             "otp_sent": True
         })
+
+    db.increment_successful_logins(user["id"])
 
     token_data = {"sub": user["email"], "id": user["id"], "role": user["role"], "name": user["name"]}
     access_token = create_access_token(data=token_data)

@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div style="max-width: 1200px; margin: 0 auto;">
+    <h2 style="margin-top: 0; color: #f8fafc;">🗄️ Database Review</h2>
+    <p style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 2rem;">
+        Select a database object to review its properties, content, and generate analysis charts.
+    </p>
+
+    <div style="display: flex; gap: 2rem;">
+        <!-- Sidebar for Tables -->
+        <div style="width: 250px; background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1rem;">
+            <h3 style="color: #cbd5e1; margin-top: 0; font-size: 1rem; border-bottom: 1px solid #334155; padding-bottom: 0.5rem;">Database Objects</h3>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                {% for t in tables %}
+                <li style="margin-bottom: 0.5rem;">
+                    <a href="?table={{ t }}" style="display: block; padding: 0.5rem; border-radius: 4px; color: {% if t == selected_table %}#ffffff{% else %}#94a3b8{% endif %}; background-color: {% if t == selected_table %}#3b82f6{% else %}transparent{% endif %}; text-decoration: none; font-weight: {% if t == selected_table %}bold{% else %}normal{% endif %};">
+                        📁 {{ t }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Main Content Area -->
+        <div style="flex-grow: 1;">
+            {% if selected_table %}
+            <div style="background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; overflow: hidden;">
+                <!-- Tabs -->
+                <div style="display: flex; background-color: #0f172a; border-bottom: 1px solid #334155;">
+                    <button class="tab-btn active" onclick="openTab(event, 'properties')" style="flex: 1; padding: 1rem; background: #1e293b; color: #f8fafc; border: none; border-bottom: 2px solid #3b82f6; cursor: pointer; font-weight: bold;">📝 Properties</button>
+                    <button class="tab-btn" onclick="openTab(event, 'content')" style="flex: 1; padding: 1rem; background: transparent; color: #94a3b8; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-weight: bold;">📋 Table Content</button>
+                    <button class="tab-btn" onclick="openTab(event, 'charts')" style="flex: 1; padding: 1rem; background: transparent; color: #94a3b8; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-weight: bold;">📊 Data Analysis</button>
+                    <button class="tab-btn" onclick="openTab(event, 'health')" style="flex: 1; padding: 1rem; background: transparent; color: #94a3b8; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-weight: bold;">🩺 Health & Stats</button>
+                </div>
+
+                <!-- Tab: Properties -->
+                <div id="properties" class="tab-content" style="padding: 1.5rem; display: block;">
+                    <h3 style="color: #f8fafc; margin-top: 0;">Schema for {{ selected_table }}</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 1rem; color: #cbd5e1; font-size: 0.9rem;">
+                        <thead>
+                            <tr style="background-color: #0f172a; border-bottom: 1px solid #334155; text-align: left;">
+                                <th style="padding: 0.75rem;">Column Name</th>
+                                <th style="padding: 0.75rem;">Data Type</th>
+                                <th style="padding: 0.75rem;">Primary Key</th>
+                                <th style="padding: 0.75rem;">Not Null</th>
+                                <th style="padding: 0.75rem;">Default Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for col in schema %}
+                            <tr style="border-bottom: 1px solid #334155;">
+                                <td style="padding: 0.75rem; font-weight: bold;">{{ col.name }}</td>
+                                <td style="padding: 0.75rem;">{{ col.type }}</td>
+                                <td style="padding: 0.75rem;">{% if col.pk %}✅ Yes{% else %}-{% endif %}</td>
+                                <td style="padding: 0.75rem;">{% if col.notnull %}✅ Yes{% else %}-{% endif %}</td>
+                                <td style="padding: 0.75rem;">{{ col.dflt_value or 'None' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Tab: Content -->
+                <div id="content" class="tab-content" style="padding: 1.5rem; display: none; overflow-x: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="color: #f8fafc; margin: 0;">Data (Top 100 rows)</h3>
+                        <button onclick="loadTableData()" style="background-color: #3b82f6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">🔄 Refresh Data</button>
+                    </div>
+                    <div id="table-data-container" style="color: #cbd5e1; font-size: 0.85rem; max-height: 500px; overflow: auto; border: 1px solid #334155; border-radius: 6px;">
+                        <div style="padding: 1rem; text-align: center; color: #94a3b8;">Loading data...</div>
+                    </div>
+                </div>
+
+                <!-- Tab: Analysis Charts -->
+                <div id="charts" class="tab-content" style="padding: 1.5rem; display: none;">
+                    <h3 style="color: #f8fafc; margin-top: 0;">Data Analysis Charts</h3>
+                    <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 1.5rem;">Select columns to dynamically generate a chart based on the loaded table data.</p>
+                    
+                    <div style="display: flex; gap: 1rem; margin-bottom: 2rem; background-color: #0f172a; padding: 1rem; border-radius: 6px; border: 1px solid #334155;">
+                        <div style="flex: 1;">
+                            <label style="display: block; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 0.5rem;">Label Column (X-Axis)</label>
+                            <select id="chart-label-col" style="width: 100%; padding: 0.5rem; background-color: #1e293b; color: white; border: 1px solid #334155; border-radius: 4px;">
+                                {% for col in schema %}
+                                <option value="{{ col.name }}">{{ col.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="display: block; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 0.5rem;">Value Column (Y-Axis)</label>
+                            <select id="chart-val-col" style="width: 100%; padding: 0.5rem; background-color: #1e293b; color: white; border: 1px solid #334155; border-radius: 4px;">
+                                {% for col in schema %}
+                                <option value="{{ col.name }}">{{ col.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="display: block; color: #cbd5e1; font-size: 0.85rem; margin-bottom: 0.5rem;">Chart Type</label>
+                            <select id="chart-type" style="width: 100%; padding: 0.5rem; background-color: #1e293b; color: white; border: 1px solid #334155; border-radius: 4px;">
+                                <option value="bar">Bar Chart</option>
+                                <option value="line">Line Chart</option>
+                                <option value="pie">Pie Chart</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <button onclick="generateChart()" style="background-color: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: bold; height: 35px;">Generate Chart</button>
+                        </div>
+                    </div>
+                    
+                    <div style="background-color: #0f172a; padding: 1rem; border-radius: 6px; border: 1px solid #334155; height: 400px; display: flex; justify-content: center; align-items: center;">
+                        <canvas id="analysisChart" style="max-height: 100%; max-width: 100%;"></canvas>
+                        <div id="chart-placeholder" style="color: #64748b;">Select columns and click Generate Chart</div>
+                    </div>
+                </div>
+
+                <!-- Tab: Health & Stats -->
+                <div id="health" class="tab-content" style="padding: 1.5rem; display: none;">
+                    <h3 style="color: #f8fafc; margin-top: 0;">Table Health & Statistics</h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem;">
+                        <div style="background-color: #0f172a; padding: 1.5rem; border-radius: 8px; border: 1px solid #334155; text-align: center;">
+                            <div style="color: #64748b; font-size: 0.85rem; text-transform: uppercase; font-weight: bold; margin-bottom: 0.5rem;">Total Records (Loaded)</div>
+                            <div id="health-total-rows" style="font-size: 2.5rem; color: #3b82f6; font-weight: bold;">--</div>
+                        </div>
+                        
+                        <div style="background-color: #0f172a; padding: 1.5rem; border-radius: 8px; border: 1px solid #334155; text-align: center;">
+                            <div style="color: #64748b; font-size: 0.85rem; text-transform: uppercase; font-weight: bold; margin-bottom: 0.5rem;">Column Count</div>
+                            <div style="font-size: 2.5rem; color: #10b981; font-weight: bold;">{{ schema|length }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div style="background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 3rem; text-align: center; color: #94a3b8;">
+                Select a table from the sidebar to view its properties and content.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentTableData = [];
+    let chartInstance = null;
+
+    function openTab(evt, tabName) {
+        let i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].style.backgroundColor = "transparent";
+            tablinks[i].style.color = "#94a3b8";
+            tablinks[i].style.borderBottom = "2px solid transparent";
+            tablinks[i].classList.remove("active");
+        }
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.style.backgroundColor = "#1e293b";
+        evt.currentTarget.style.color = "#f8fafc";
+        evt.currentTarget.style.borderBottom = "2px solid #3b82f6";
+        evt.currentTarget.classList.add("active");
+
+        if (tabName === 'content' && currentTableData.length === 0) {
+            loadTableData();
+        }
+    }
+
+    async function loadTableData() {
+        const tableName = "{{ selected_table }}";
+        if (!tableName) return;
+        
+        const container = document.getElementById("table-data-container");
+        container.innerHTML = '<div style="padding: 1rem; text-align: center; color: #94a3b8;">Loading data from server...</div>';
+        
+        try {
+            const response = await fetch(`/admin/api/table/${tableName}?limit=100`);
+            const json = await response.json();
+            
+            if (json.error) {
+                container.innerHTML = `<div style="padding: 1rem; color: #ef4444;">Error: ${json.error}</div>`;
+                return;
+            }
+            
+            currentTableData = json.data;
+            document.getElementById("health-total-rows").textContent = currentTableData.length;
+            
+            if (currentTableData.length === 0) {
+                container.innerHTML = '<div style="padding: 1rem; text-align: center; color: #94a3b8;">Table is empty.</div>';
+                return;
+            }
+            
+            // Build HTML table
+            const cols = Object.keys(currentTableData[0]);
+            let html = '<table style="width: 100%; border-collapse: collapse; white-space: nowrap;">';
+            
+            html += '<thead><tr style="background-color: #0f172a; position: sticky; top: 0; z-index: 10;">';
+            cols.forEach(col => {
+                html += `<th style="padding: 0.75rem; border-bottom: 1px solid #334155; text-align: left; color: #f8fafc;">${col}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+            
+            currentTableData.forEach(row => {
+                html += '<tr style="border-bottom: 1px solid #334155;">';
+                cols.forEach(col => {
+                    let val = row[col];
+                    if (val === null) val = '<span style="color:#64748b">null</span>';
+                    else if (typeof val === 'object') val = JSON.stringify(val);
+                    else if (String(val).length > 50) val = String(val).substring(0, 50) + '...';
+                    
+                    html += `<td style="padding: 0.5rem 0.75rem;">${val}</td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+            
+        } catch (error) {
+            container.innerHTML = `<div style="padding: 1rem; color: #ef4444;">Failed to load data: ${error.message}</div>`;
+        }
+    }
+    
+    function generateChart() {
+        if (currentTableData.length === 0) {
+            alert("Please wait for table data to load, or open the 'Table Content' tab first.");
+            return;
+        }
+        
+        const labelCol = document.getElementById("chart-label-col").value;
+        const valCol = document.getElementById("chart-val-col").value;
+        const chartType = document.getElementById("chart-type").value;
+        
+        document.getElementById("chart-placeholder").style.display = "none";
+        
+        // Aggregate data
+        let aggregated = {};
+        currentTableData.forEach(row => {
+            let label = String(row[labelCol] || 'Unknown');
+            if (label.length > 20) label = label.substring(0, 20) + '...';
+            
+            let val = parseFloat(row[valCol]) || 0;
+            
+            if (aggregated[label]) {
+                aggregated[label] += val;
+            } else {
+                aggregated[label] = val;
+            }
+        });
+        
+        const labels = Object.keys(aggregated);
+        const data = Object.values(aggregated);
+        
+        const ctx = document.getElementById('analysisChart').getContext('2d');
+        
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
+        
+        chartInstance = new Chart(ctx, {
+            type: chartType,
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: `Sum of ${valCol} by ${labelCol}`,
+                    data: data,
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.7)',
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(245, 158, 11, 0.7)',
+                        'rgba(239, 68, 68, 0.7)',
+                        'rgba(139, 92, 246, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgb(59, 130, 246)',
+                        'rgb(16, 185, 129)',
+                        'rgb(245, 158, 11)',
+                        'rgb(239, 68, 68)',
+                        'rgb(139, 92, 246)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#cbd5e1' }
+                    }
+                },
+                scales: chartType !== 'pie' ? {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: '#94a3b8' },
+                        grid: { color: '#334155' }
+                    },
+                    x: {
+                        ticks: { color: '#94a3b8' },
+                        grid: { color: '#334155' }
+                    }
+                } : {}
+            }
+        });
+    }
+
+    // Preload data if selected table exists
+    {% if selected_table %}
+        loadTableData();
+    {% endif %}
+</script>
+{% endblock %}

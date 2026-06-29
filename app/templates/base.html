@@ -50,6 +50,13 @@
         <hr style="border-color: #334155; margin: 1.5rem 0;">
         <span style="color: #64748b; font-size: 0.75rem; padding: 0 1rem; text-transform: uppercase; font-weight: bold;">Coming Soon</span>
         <a href="/bot" class="nav-link" style="color: #818cf8;">🤖 AI Bot Agent</a>
+        
+        {% if user and user.role == 'admin' %}
+        <hr style="border-color: #334155; margin: 1.5rem 0;">
+        <span style="color: #64748b; font-size: 0.75rem; padding: 0 1rem; text-transform: uppercase; font-weight: bold;">Admin Dashboard</span>
+        <a href="/admin/database" class="nav-link">🗄️ Database Review</a>
+        <a href="/admin/users" class="nav-link">👥 Users Management</a>
+        {% endif %}
     </nav>
 </div>
 
