@@ -32,6 +32,35 @@ logger.info(f"AskiResearchLabs Application starting up. Log level: {LOG_LEVEL_ST
 
 app = FastAPI(title="AskiResearchLabs API")
 
+from fastapi import Request
+from starlette.middleware.base import BaseHTTPMiddleware
+from app.core.security import get_current_user_from_cookie, create_access_token, SESSION_EXPIRY_MINUTES
+
+class SessionRefreshMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        
+        if request.url.path.startswith("/static") or request.url.path.startswith("/auth/logout"):
+            return response
+            
+        user = get_current_user_from_cookie(request)
+        if user:
+            token_data = {"sub": user.get("sub"), "id": user.get("id"), "role": user.get("role"), "name": user.get("name")}
+            access_token = create_access_token(data=token_data)
+            
+            response.set_cookie(
+                key="access_token",
+                value=f"Bearer {access_token}",
+                httponly=True,
+                secure=False,
+                samesite="lax",
+                max_age=SESSION_EXPIRY_MINUTES * 60
+            )
+            
+        return response
+
+app.add_middleware(SessionRefreshMiddleware)
+
 # Mount static files
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
